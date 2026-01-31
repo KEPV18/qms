@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     const { code } = req.query;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REDIRECT_URI || `https://${req.headers.host}/api/auth/callback`;
+    const REDIRECT_URI = process.env.REDIRECT_URI || `https://qms-zeta.vercel.app/api/auth/callback`;
 
     if (!code) {
         return res.status(400).send('No code provided');

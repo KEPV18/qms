@@ -1,4 +1,24 @@
-import app from '../api/index.js';
+import express from 'express';
+import dotenv from 'dotenv';
+import authStart from '../api/auth/index.js';
+import authCallback from '../api/auth/callback.js';
+import tokenHandler from '../api/token.js';
+
+dotenv.config();
+
+const app = express();
+app.disable('x-powered-by');
+
+// Basic JSON parsing if needed
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Mount serverless handlers on local Express
+app.get('/api/auth', (req, res) => authStart(req, res));
+app.get('/api/auth/callback', (req, res) => authCallback(req, res));
+app.get('/oauth2callback', (req, res) => authCallback(req, res));
+app.get('/api/auth/google/callback', (req, res) => authCallback(req, res));
+app.get('/api/token', (req, res) => tokenHandler(req, res));
 
 const port = process.env.PORT || 3001;
 

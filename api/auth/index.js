@@ -4,6 +4,7 @@ export default async function handler(req, res) {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
     const REDIRECT_URI = process.env.REDIRECT_URI;
+    const PROD_HOST = 'qms-zeta.vercel.app';
 
     // Health check logic inside the auth handler for debugging env vars
     if (req.query.health === 'true') {
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
     const encodedScopes = encodeURIComponent(SCOPES.join(' '));
     
     // Fallback URI if not set (though it should be set in Vercel)
-    const finalRedirectUri = REDIRECT_URI || `https://${req.headers.host}/api/auth/callback`;
+    const finalRedirectUri = REDIRECT_URI || `https://${PROD_HOST}/api/auth/callback`;
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${finalRedirectUri}&response_type=code&scope=${encodedScopes}&access_type=offline&prompt=consent`;
     
