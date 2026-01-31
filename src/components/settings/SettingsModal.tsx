@@ -67,10 +67,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         }
     };
 
-    const handleStartAuth = () => {
-        window.location.href = '/api/auth';
-    };
-
     const handleCheckServer = async () => {
         setServerStatus('checking');
         // Simple ping to backend if available, or just verify auth endpoint
@@ -152,13 +148,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                     )}
                                 </CardContent>
                                 <CardFooter>
-                                    <Button
-                                        variant="default"
-                                        onClick={handleStartAuth}
-                                        className="w-full sm:w-auto mr-2"
-                                    >
-                                        Authenticate Now
-                                    </Button>
                                     <Button
                                         variant={driveStatus === 'success' ? "outline" : "default"}
                                         onClick={handleCheckDrive}
