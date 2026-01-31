@@ -67,12 +67,16 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         }
     };
 
+    const handleStartAuth = () => {
+        window.location.href = '/api/auth';
+    };
+
     const handleCheckServer = async () => {
         setServerStatus('checking');
         // Simple ping to backend if available, or just verify auth endpoint
         try {
             // For now, checks if we can hit the auth endpoint which should be up
-            const response = await fetch('/api/auth/status');
+            const response = await fetch('/api/auth?health=true');
             if (response.ok) {
                 setServerStatus('online');
                 toast({ title: "Server Online", description: "Backend connection active.", className: "bg-success text-success-foreground" });
@@ -148,6 +152,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                     )}
                                 </CardContent>
                                 <CardFooter>
+                                    <Button
+                                        variant="default"
+                                        onClick={handleStartAuth}
+                                        className="w-full sm:w-auto mr-2"
+                                    >
+                                        Authenticate Now
+                                    </Button>
                                     <Button
                                         variant={driveStatus === 'success' ? "outline" : "default"}
                                         onClick={handleCheckDrive}
