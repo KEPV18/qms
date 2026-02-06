@@ -30,7 +30,7 @@ export default function Register() {
       toast({ title: "الحساب موجود", description: "هذا البريد مسجل مسبقاً", variant: "destructive" });
       return;
     }
-    const role = users.length === 0 ? "admin" : "user";
+    const role = "user";
     // New accounts require admin approval
     addUser({ name, email, password, role, active: false, needsApprovalNotification: false });
     setIsLoading(false);
