@@ -1,4 +1,6 @@
 import * as React from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { ProfileRow } from "@/integrations/supabase/types";
 
 type Role = "admin" | "manager" | "auditor" | "user";
 
@@ -29,6 +31,7 @@ const USERS_KEY = "qms_users";
 const SESSION_KEY = "qms_session";
 
 function loadUsers(): AppUser[] {
+  if (supabase) return [];
   const raw = localStorage.getItem(USERS_KEY);
   if (raw) {
     try {
@@ -41,6 +44,7 @@ function loadUsers(): AppUser[] {
 }
 
 function saveUsers(users: AppUser[]) {
+  if (supabase) return;
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
@@ -70,25 +74,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<AppUser | null>(null);
 
   React.useEffect(() => {
-    const existing = loadUsers();
-    if (existing.length === 0) {
-      const admin: AppUser = {
-        id: crypto.randomUUID(),
-        name: "Administrator",
-        email: "admin@local",
-        password: "admin1500",
-        role: "admin",
-        active: true,
-        lastLoginAt: 0,
-      };
-      saveUsers([admin]);
-      setUsers([admin]);
-    } else {
-      setUsers(existing);
-    }
+    const bootstrap = async () => {
+      if (supabase) {
+        const { data, error } = await supabase.from("profiles").select("*");
+        const rows = Array.isArray(data) ? data : [];
+        if (!error && rows.length === 0) {
+          const adminId = crypto.randomUUID();
+          await supabase.from("profiles").insert({
+            id: adminId,
+            name: "Administrator",
+            email: "admin@local",
+            password: "admin1500",
+            role: "admin",
+            active: true,
+            last_login_at: 0,
+          });
+        }
+        const mapped = rows.map((r: ProfileRow) => ({
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          password: r.password || "",
+          role: r.role || "user",
+          active: !!r.active,
+          lastLoginAt: r.last_login_at || 0,
+          needsApprovalNotification: false,
+        })) as AppUser[];
+        setUsers(mapped);
+      } else {
+        const existing = loadUsers();
+        if (existing.length === 0) {
+          const admin: AppUser = {
+            id: crypto.randomUUID(),
+            name: "Administrator",
+            email: "admin@local",
+            password: "admin1500",
+            role: "admin",
+            active: true,
+            lastLoginAt: 0,
+          };
+          saveUsers([admin]);
+          setUsers([admin]);
+        } else {
+          setUsers(existing);
+        }
+      }
+    };
+    bootstrap();
     const userId = loadSession();
     if (userId) {
-      const u = (existing.length ? existing : users).find(x => x.id === userId) || null;
+      const u = (users.length ? users : loadUsers()).find(x => x.id === userId) || null;
       setUser(u);
     }
   }, []);
@@ -151,12 +186,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = [...users, newUser];
     setUsers(updated);
     saveUsers(updated);
+    if (supabase) {
+      supabase.from("profiles").insert({
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role,
+        active: newUser.active,
+        last_login_at: newUser.lastLoginAt || 0,
+      }).then(() => {}).catch(() => {});
+    }
   }, [users]);
 
   const updateUser = React.useCallback((id: string, updates: Partial<AppUser>) => {
     const updated = users.map(u => (u.id === id ? { ...u, ...updates } : u));
     setUsers(updated);
     saveUsers(updated);
+    if (supabase) {
+      supabase.from("profiles").update({
+        name: updates.name,
+        email: updates.email,
+        password: updates.password,
+        role: updates.role,
+        active: updates.active,
+        last_login_at: updates.lastLoginAt,
+      }).eq("id", id).then(() => {}).catch(() => {});
+    }
     if (user && user.id === id) {
       setUser({ ...user, ...updates });
     }
@@ -166,6 +222,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = users.filter(u => u.id !== id);
     setUsers(updated);
     saveUsers(updated);
+    if (supabase) {
+      supabase.from("profiles").delete().eq("id", id).then(() => {}).catch(() => {});
+    }
     if (user && user.id === id) {
       setUser(null);
       saveSession(null);
@@ -173,13 +232,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [users, user]);
   
   const reloadUsers = React.useCallback(() => {
-    const updated = loadUsers();
-    setUsers(updated);
-    const currentId = loadSession();
-    if (currentId) {
-      const u = updated.find(x => x.id === currentId) || null;
-      setUser(u);
-    }
+    const run = async () => {
+      if (supabase) {
+        const { data } = await supabase.from("profiles").select("*");
+        const rows = Array.isArray(data) ? data : [];
+        const mapped = rows.map((r: ProfileRow) => ({
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          password: r.password || "",
+          role: r.role || "user",
+          active: !!r.active,
+          lastLoginAt: r.last_login_at || 0,
+          needsApprovalNotification: false,
+        })) as AppUser[];
+        setUsers(mapped);
+        const currentId = loadSession();
+        if (currentId) {
+          const u = mapped.find(x => x.id === currentId) || null;
+          setUser(u);
+        }
+      } else {
+        const updated = loadUsers();
+        setUsers(updated);
+        const currentId = loadSession();
+        if (currentId) {
+          const u = updated.find(x => x.id === currentId) || null;
+          setUser(u);
+        }
+      }
+    };
+    run();
   }, []);
 
   const value: AuthContextValue = {
