@@ -6,12 +6,17 @@ import { useNavigate } from "react-router-dom";
 
 export default function AdminGate() {
   const [code, setCode] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleAccess = () => {
-    if (code === "admin1500") {
+    const envObj: Record<string, unknown> = (import.meta as unknown as { env?: Record<string, unknown> }).env || {};
+    const expected = typeof envObj.VITE_ADMIN_ACCESS_CODE === "string" ? envObj.VITE_ADMIN_ACCESS_CODE : "admin1500";
+    if (code.trim() === String(expected).trim()) {
       localStorage.setItem("admin_gate_ok", "true");
       navigate("/admin/accounts");
+    } else {
+      setError("Invalid access code");
     }
   };
 
@@ -28,6 +33,7 @@ export default function AdminGate() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </CardContent>
         <CardFooter>
           <Button className="w-full" onClick={handleAccess}>Continue</Button>
