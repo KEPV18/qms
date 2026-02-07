@@ -30,22 +30,34 @@ type AuthContextValue = {
 const USERS_KEY = "qms_users";
 const SESSION_KEY = "qms_session";
 
-function loadUsers(): AppUser[] {
-  if (supabase) return [];
-  const raw = localStorage.getItem(USERS_KEY);
-  if (raw) {
-    try {
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
+const apiBase = (import.meta as unknown as { env?: Record<string, unknown> }).env?.DEV ? "http://localhost:3001" : "";
+
+async function apiFetch<T = unknown>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${apiBase}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}`);
   }
-  return [];
+  return res.json() as Promise<T>;
 }
 
-function saveUsers(users: AppUser[]) {
-  if (supabase) return;
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+function loadUsersLocal(): AppUser[] {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUsersLocal(users: AppUser[]) {
+  try {
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  } catch { void 0; }
 }
 
 function loadSession(): string | null {
@@ -78,17 +90,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (supabase) {
         const { data, error } = await supabase.from("profiles").select("*");
         const rows = Array.isArray(data) ? data : [];
-        if (!error && rows.length === 0) {
-          const adminId = crypto.randomUUID();
-          await supabase.from("profiles").insert({
-            id: adminId,
-            name: "Administrator",
-            email: "admin@local",
-            password: "admin1500",
-            role: "admin",
-            active: true,
-            last_login_at: 0,
-          });
+        if (!error) {
+          const hasAdmin = rows.some(r => String(r.email).toLowerCase() === "admin@local");
+          if (!hasAdmin) {
+            const adminId = crypto.randomUUID();
+            await supabase.from("profiles").insert({
+              id: adminId,
+              name: "admin",
+              email: "admin@local",
+              password: "admin",
+              role: "admin",
+              active: true,
+              last_login_at: 0,
+            });
+          }
         }
         const mapped = rows.map((r: ProfileRow) => ({
           id: r.id,
@@ -102,51 +117,90 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })) as AppUser[];
         setUsers(mapped);
       } else {
-        const existing = loadUsers();
-        if (existing.length === 0) {
-          const admin: AppUser = {
-            id: crypto.randomUUID(),
-            name: "Administrator",
-            email: "admin@local",
-            password: "admin1500",
-            role: "admin",
-            active: true,
-            lastLoginAt: 0,
-          };
-          saveUsers([admin]);
-          setUsers([admin]);
-        } else {
-          setUsers(existing);
+        try {
+          const existing = await apiFetch<AppUser[]>("/api/users");
+          const hasAdmin = existing.some(u => u.email.toLowerCase() === "admin@local");
+          if (!hasAdmin) {
+            const admin: Omit<AppUser, "id"> = {
+              name: "admin",
+              email: "admin@local",
+              password: "admin",
+              role: "admin",
+              active: true,
+              lastLoginAt: 0,
+            };
+            try {
+              const created = await apiFetch<AppUser>("/api/users", {
+                method: "POST",
+                body: JSON.stringify(admin),
+              });
+              setUsers([...existing, created]);
+            } catch {
+              const seeded: AppUser = { ...admin, id: crypto.randomUUID() };
+              const merged = [...existing, seeded];
+              saveUsersLocal(merged);
+              setUsers(merged);
+            }
+          } else {
+            setUsers(existing);
+          }
+        } catch {
+          const existing = loadUsersLocal();
+          let list = existing;
+          const hasAdmin = existing.some(u => u.email.toLowerCase() === "admin@local");
+          if (!hasAdmin) {
+            const seeded: AppUser = {
+              id: crypto.randomUUID(),
+              name: "admin",
+              email: "admin@local",
+              password: "admin",
+              role: "admin",
+              active: true,
+              lastLoginAt: 0,
+            };
+            list = [...existing, seeded];
+            saveUsersLocal(list);
+          }
+          setUsers(list);
         }
       }
     };
     bootstrap();
     const userId = loadSession();
     if (userId) {
-      const u = (users.length ? users : loadUsers()).find(x => x.id === userId) || null;
-      setUser(u);
+      if (supabase) {
+        const u = users.find(x => x.id === userId) || null;
+        setUser(u);
+      } else {
+        apiFetch<AppUser[]>("/api/users").then(all => {
+          const u = all.find(x => x.id === userId) || null;
+          setUser(u);
+        }).catch(() => setUser(null));
+      }
     }
   }, []);
 
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === USERS_KEY) {
-        const updated = loadUsers();
-        setUsers(updated);
-        const currentId = loadSession();
-        if (currentId) {
-          const u = updated.find(x => x.id === currentId) || null;
-          setUser(u);
-        }
+        apiFetch<AppUser[]>("/api/users").then(updated => {
+          setUsers(updated);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
+        }).catch(() => void 0);
       }
       if (e.key === SESSION_KEY) {
         const currentId = loadSession();
         if (!currentId) {
           setUser(null);
         } else {
-          const updated = loadUsers();
-          const u = updated.find(x => x.id === currentId) || null;
-          setUser(u);
+          apiFetch<AppUser[]>("/api/users").then(updated => {
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          }).catch(() => setUser(null));
         }
       }
     };
@@ -170,7 +224,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return x;
     });
     setUsers(updated);
-    saveUsers(updated);
+    if (!supabase) {
+      apiFetch<AppUser>("/api/users", {
+        method: "PUT",
+        body: JSON.stringify({ id: u.id, lastLoginAt: Date.now(), needsApprovalNotification: false }),
+      }).catch(() => void 0);
+    }
     setUser(u);
     saveSession(u.id);
     return true;
@@ -185,7 +244,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const newUser: AppUser = { ...userInput, id: crypto.randomUUID() };
     const updated = [...users, newUser];
     setUsers(updated);
-    saveUsers(updated);
+    if (!supabase) {
+      apiFetch<AppUser>("/api/users", {
+        method: "POST",
+        body: JSON.stringify(newUser),
+      }).catch(() => saveUsersLocal(updated));
+    }
     if (supabase) {
       supabase.from("profiles").insert({
         id: newUser.id,
@@ -202,7 +266,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateUser = React.useCallback((id: string, updates: Partial<AppUser>) => {
     const updated = users.map(u => (u.id === id ? { ...u, ...updates } : u));
     setUsers(updated);
-    saveUsers(updated);
+    if (!supabase) {
+      apiFetch<AppUser>("/api/users", {
+        method: "PUT",
+        body: JSON.stringify({ id, ...updates }),
+      }).catch(() => saveUsersLocal(updated));
+    }
     if (supabase) {
       supabase.from("profiles").update({
         name: updates.name,
@@ -221,7 +290,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const removeUser = React.useCallback((id: string) => {
     const updated = users.filter(u => u.id !== id);
     setUsers(updated);
-    saveUsers(updated);
+    if (!supabase) {
+      apiFetch("/api/users", {
+        method: "DELETE",
+        body: JSON.stringify({ id }),
+      }).catch(() => saveUsersLocal(updated));
+    }
     if (supabase) {
       supabase.from("profiles").delete().eq("id", id).then(() => {}).catch(() => {});
     }
@@ -253,12 +327,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(u);
         }
       } else {
-        const updated = loadUsers();
-        setUsers(updated);
-        const currentId = loadSession();
-        if (currentId) {
-          const u = updated.find(x => x.id === currentId) || null;
-          setUser(u);
+        try {
+          const updated = await apiFetch<AppUser[]>("/api/users");
+          setUsers(updated);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
+        } catch {
+          setUsers([]);
         }
       }
     };

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import authStart from '../api/auth/index.js';
 import authCallback from '../api/auth/callback.js';
 import tokenHandler from '../api/token.js';
+import usersHandler from '../api/users.js';
 
 dotenv.config();
 
@@ -12,6 +13,10 @@ app.disable('x-powered-by');
 // Basic JSON parsing if needed
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  console.log('Incoming:', req.method, req.url);
+  next();
+});
 
 // Mount serverless handlers on local Express
 app.get('/api/auth', (req, res) => authStart(req, res));
@@ -19,6 +24,15 @@ app.get('/api/auth/callback', (req, res) => authCallback(req, res));
 app.get('/oauth2callback', (req, res) => authCallback(req, res));
 app.get('/api/auth/google/callback', (req, res) => authCallback(req, res));
 app.get('/api/token', (req, res) => tokenHandler(req, res));
+console.log('Mounting /api/users, handler type:', typeof usersHandler);
+app.use('/api/users', (req, res) => {
+  try {
+    return usersHandler(req, res);
+  } catch (e) {
+    console.error('usersHandler error', e);
+    res.status(500).json({ error: 'users handler crashed' });
+  }
+});
 
 const port = process.env.PORT || 3001;
 
