@@ -82,7 +82,25 @@ function saveSession(userId: string | null) {
 const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [users, setUsers] = React.useState<AppUser[]>([]);
+  const initialLocal = (() => {
+    const existing = loadUsersLocal();
+    if (existing.length === 0) {
+      const seeded: AppUser = {
+        id: crypto.randomUUID(),
+        name: "admin",
+        email: "admin@local",
+        password: "admin",
+        role: "admin",
+        active: true,
+        lastLoginAt: 0,
+      };
+      const merged = [seeded];
+      saveUsersLocal(merged);
+      return merged;
+    }
+    return existing;
+  })();
+  const [users, setUsers] = React.useState<AppUser[]>(initialLocal);
   const [user, setUser] = React.useState<AppUser | null>(null);
 
   React.useEffect(() => {
@@ -190,7 +208,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const u = updated.find(x => x.id === currentId) || null;
             setUser(u);
           }
-        }).catch(() => void 0);
+        }).catch(() => {
+          const updated = loadUsersLocal();
+          setUsers(updated);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
+        });
       }
       if (e.key === SESSION_KEY) {
         const currentId = loadSession();
@@ -200,7 +226,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           apiFetch<AppUser[]>("/api/users").then(updated => {
             const u = updated.find(x => x.id === currentId) || null;
             setUser(u);
-          }).catch(() => setUser(null));
+          }).catch(() => {
+            const updated = loadUsersLocal();
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          });
         }
       }
     };
@@ -336,7 +366,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(u);
           }
         } catch {
-          setUsers([]);
+          const updated = loadUsersLocal();
+          setUsers(updated);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = updated.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
         }
       }
     };
