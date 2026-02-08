@@ -1,0 +1,24 @@
+name: Mirror to work repo
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to work
+        env:
+          WORK_TOKEN: ${{ secrets.WORK_GH_TOKEN }}
+        run: |
+          set -e
+          git remote add work "https://x-access-token:${WORK_TOKEN}@github.com/akhdev185/qms-core.git"
+          git push --force --prune work "refs/remotes/origin/*:refs/heads/*"
+          git push --force --prune work --tags
