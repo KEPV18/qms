@@ -1,4 +1,4 @@
-name: Mirror to work repo
+﻿name: Mirror to work repo
 
 on:
   push:
@@ -8,23 +8,33 @@ on:
 jobs:
   mirror:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - name: Checkout full history
+      - name: STEP_1_CHECKOUT
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Mirror to work using gh auth
+      - name: STEP_2_TOKEN_PRESENCE
         shell: bash
         env:
           WORK_GH_TOKEN: ${{ secrets.WORK_GH_TOKEN }}
         run: |
           set -euo pipefail
-          echo "$WORK_GH_TOKEN" | gh auth login --with-token
-          git remote set-url origin "https://github.com/KEPV18/qms.git"
-          git remote add work "https://github.com/akhdev185/qms-core.git"
-          gh auth setup-git
+          if [ -n "${WORK_GH_TOKEN:-}" ]; then
+            echo "token_present=true"
+            echo "token_length=${#WORK_GH_TOKEN}"
+          else
+            echo "token_present=false"
+            exit 1
+          fi
+
+      - name: STEP_3_PUSH_TO_WORK
+        shell: bash
+        env:
+          WORK_GH_TOKEN: ${{ secrets.WORK_GH_TOKEN }}
+        run: |
+          set -euo pipefail
+          git remote remove work 2>/dev/null || true
+          git remote add work "https://x-access-token:${WORK_GH_TOKEN}@github.com/akhdev185/qms-core.git"
           git push --force --prune work "refs/remotes/origin/*:refs/heads/*"
           git push --force --prune work --tags
