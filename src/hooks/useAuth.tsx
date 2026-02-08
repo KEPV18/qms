@@ -24,7 +24,7 @@ type AuthContextValue = {
   updateUser: (id: string, updates: Partial<AppUser>) => void;
   removeUser: (id: string) => void;
   changePassword: (id: string, oldPass: string, newPass: string) => boolean;
-  reloadUsers: () => void;
+  reloadUsers: () => Promise<void>;
 };
 
 const USERS_KEY = "qms_users";
@@ -426,7 +426,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [users, user]);
   
-  const reloadUsers = React.useCallback(() => {
+  const reloadUsers = React.useCallback(async () => {
     const run = async () => {
       if (supabase && !supabaseDisabled) {
         const { data } = await supabase.from("profiles").select("*");
@@ -489,7 +489,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     };
-    run();
+    await run();
   }, []);
 
   const value: AuthContextValue = {
