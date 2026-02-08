@@ -34,7 +34,13 @@ jobs:
           WORK_GH_TOKEN: ${{ secrets.WORK_GH_TOKEN }}
         run: |
           set -euo pipefail
+
+          # IMPORTANT: remove Actions auth header so git uses our token in the remote URL
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --local  --unset-all http.https://github.com/.extraheader || true
+
           git remote remove work 2>/dev/null || true
           git remote add work "https://x-access-token:${WORK_GH_TOKEN}@github.com/akhdev185/qms-core.git"
+
           git push --force --prune work "refs/remotes/origin/*:refs/heads/*"
           git push --force --prune work --tags
