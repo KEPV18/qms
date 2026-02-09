@@ -1,10 +1,51 @@
 import axios from 'axios';
 
+function getBaseUrl(req) {
+    const forwardedHost = req.headers['x-forwarded-host'];
+    const host = (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) || req.headers.host || 'localhost:3001';
+
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    let proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto);
+    if (!proto) {
+        proto = host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+    }
+
+    return `${proto}://${host}`;
+}
+
+function readRedirectUriFromState(rawState) {
+    if (!rawState || typeof rawState !== 'string') return undefined;
+
+    try {
+        const decoded = decodeURIComponent(rawState);
+        const parsed = JSON.parse(decoded);
+        return typeof parsed?.redirectUri === 'string' ? parsed.redirectUri : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function pickRedirectUri(req) {
+    const configured = process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || '';
+    const candidates = configured
+        .split(',')
+        .map(u => u.trim())
+        .filter(Boolean);
+
+    const dynamic = `${getBaseUrl(req)}/api/auth/callback`;
+    if (candidates.length === 0) return dynamic;
+
+    const currentBase = getBaseUrl(req);
+    const match = candidates.find(u => u.startsWith(currentBase));
+    return match || candidates[0];
+}
+
 export default async function handler(req, res) {
-    const { code } = req.query;
+    const { code, state } = req.query;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REDIRECT_URI || `https://qms-zeta.vercel.app/api/auth/callback`;
+    const redirectUriFromState = readRedirectUriFromState(state);
+    const REDIRECT_URI = redirectUriFromState || pickRedirectUri(req);
 
     if (!code) {
         return res.status(400).send('No code provided');

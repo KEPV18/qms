@@ -32,9 +32,15 @@ export default function Register() {
     }
     const role = "user";
     // New accounts require admin approval
-    addUser({ name, email, password, role, active: false, needsApprovalNotification: false });
+    const created = await addUser({ name, email, password, role, active: false, needsApprovalNotification: false });
     setIsLoading(false);
-    toast({ title: "تم إنشاء الحساب", description: "يمكنك تسجيل الدخول الآن" });
+
+    if (!created.ok) {
+      toast({ title: "فشل إنشاء الحساب", description: created.message || "حدث خطأ أثناء إنشاء الحساب", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "تم إنشاء الحساب", description: created.message || "يمكنك تسجيل الدخول الآن" });
     navigate("/login");
   };
 
