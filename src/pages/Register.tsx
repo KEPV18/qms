@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,28 +26,56 @@ export default function Register() {
 
   const handleRegister = async () => {
     setIsLoading(true);
+
     if (!name || !email || !password || password !== confirm) {
       setIsLoading(false);
-      toast({ title: "بيانات غير مكتملة", description: "تأكد من إدخال كل الحقول وتطابق كلمة المرور", variant: "destructive" });
+      toast({
+        title: "بيانات غير مكتملة",
+        description: "تأكد من إدخال كل الحقول وتطابق كلمة المرور",
+        variant: "destructive",
+      });
       return;
     }
-    const exists = users.some(u => u.email.toLowerCase() === email.toLowerCase());
+
+    const exists = users.some((u) => u.email.toLowerCase() === email.toLowerCase());
     if (exists) {
       setIsLoading(false);
-      toast({ title: "الحساب موجود", description: "هذا البريد مسجل مسبقاً", variant: "destructive" });
+      toast({
+        title: "الحساب موجود",
+        description: "هذا البريد مسجل مسبقاً",
+        variant: "destructive",
+      });
       return;
     }
-    const role = "user";
+
+    const role = "user" as const;
+
     // New accounts require admin approval
-    const created = await addUser({ name, email, password, role, active: false, needsApprovalNotification: false });
+    const created = await addUser({
+      name,
+      email,
+      password,
+      role,
+      active: false,
+      needsApprovalNotification: false,
+    });
+
     setIsLoading(false);
 
     if (!created.ok) {
-      toast({ title: "فشل إنشاء الحساب", description: created.message || "حدث خطأ أثناء إنشاء الحساب", variant: "destructive" });
+      toast({
+        title: "فشل إنشاء الحساب",
+        description: created.message || "حدث خطأ أثناء إنشاء الحساب",
+        variant: "destructive",
+      });
       return;
     }
 
-    toast({ title: "تم إنشاء الحساب", description: created.message || "يمكنك تسجيل الدخول الآن" });
+    toast({
+      title: "تم إنشاء الحساب",
+      description: created.message || "يمكنك تسجيل الدخول الآن",
+    });
+
     navigate("/login");
   };
 
@@ -51,28 +86,57 @@ export default function Register() {
           <CardTitle>إنشاء حساب</CardTitle>
           <CardDescription>أدخل بياناتك لإنشاء حساب جديد</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">الاسم</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل" />
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="الاسم الكامل"
+            />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+            />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="password">كلمة المرور</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+            />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="confirm">تأكيد كلمة المرور</Label>
-            <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="••••••••" />
+            <Input
+              id="confirm"
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="••••••••"
+            />
           </div>
         </CardContent>
+
         <CardFooter className="flex flex-col gap-3">
           <Button className="w-full" onClick={handleRegister} disabled={isLoading}>
             {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
           </Button>
+
           <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>
             لدي حساب بالفعل
           </Button>
