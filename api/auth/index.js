@@ -38,9 +38,24 @@ export default async function handler(req, res) {
     if (!process.env.VERCEL) {
         finalRedirectUri = 'http://localhost:3001/api/auth/callback';
     } 
-    // 2. Otherwise, ALWAYS use the stable production URL
+    // 2. Otherwise, check if the current request host is one of the allowed redirect URIs
     else {
-        finalRedirectUri = `https://${PROD_HOST}/api/auth/callback`;
+        // Define allowed hosts based on what you registered in Google Console
+        const ALLOWED_HOSTS = [
+            'qms-zeta.vercel.app',
+            'qms-820dunivc-kepv18s-projects.vercel.app',
+            'qms-git-main-kepv18s-projects.vercel.app'
+        ];
+
+        const host = req.headers.host; // e.g. "qms-zeta.vercel.app"
+        
+        // If the current host is in our allowed list, use it. 
+        // Otherwise, fallback to the main PROD_HOST (qms-git-main...)
+        if (ALLOWED_HOSTS.includes(host)) {
+            finalRedirectUri = `https://${host}/api/auth/callback`;
+        } else {
+            finalRedirectUri = `https://${PROD_HOST}/api/auth/callback`;
+        }
     }
     
     console.log('DEBUG: OAuth Init', {
