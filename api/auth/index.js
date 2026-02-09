@@ -28,8 +28,25 @@ export default async function handler(req, res) {
     const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'];
     const encodedScopes = encodeURIComponent(SCOPES.join(' '));
     
-    // Fallback URI if not set (though it should be set in Vercel)
-    const finalRedirectUri = REDIRECT_URI || `https://${PROD_HOST}/api/auth/callback`;
+    // Force use of the registered Production URL for Google OAuth Redirect
+    // This prevents "URI mismatch" errors when deploying to Vercel Preview URLs
+    // Google Console only lists the Production URL, so we must match it exactly.
+    let finalRedirectUri;
+    
+    // 1. If running locally (dev), use localhost
+    if (!process.env.VERCEL) {
+        finalRedirectUri = 'http://localhost:3001/api/auth/callback';
+    } 
+    // 2. Otherwise, ALWAYS use the stable production URL
+    else {
+        finalRedirectUri = `https://${PROD_HOST}/api/auth/callback`;
+    }
+    
+    console.log('DEBUG: OAuth Init', {
+        env_redirect_uri: REDIRECT_URI,
+        vercel_url: process.env.VERCEL_URL,
+        using_uri: finalRedirectUri
+    });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${finalRedirectUri}&response_type=code&scope=${encodedScopes}&access_type=offline&prompt=consent`;
     

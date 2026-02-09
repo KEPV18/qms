@@ -18,33 +18,37 @@ import { RequireAuth, RequireRole } from "./components/auth/Guards";
 import AdminAccounts from "./pages/AdminAccounts";
 import AdminGate from "./pages/AdminGate";
 import AdminAccessGuard from "./components/auth/AdminAccessGuard";
+import { ErrorBoundary } from "./components/ui/error-boundary";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-            <Route path="/module/:moduleId" element={<RequireAuth><ModulePage /></RequireAuth>} />
-            <Route path="/record/:code" element={<RequireAuth><RecordDetail /></RequireAuth>} />
-            <Route path="/audit" element={<RequireAuth><AuditPage /></RequireAuth>} />
-            <Route path="/archive" element={<RequireAuth><ArchivePage /></RequireAuth>} />
-            <Route path="/risk-management" element={<RequireAuth><RiskManagementPage /></RequireAuth>} />
-            <Route path="/admin" element={<AdminGate />} />
-            <Route path="/admin/accounts" element={<AdminAccessGuard><AdminAccounts /></AdminAccessGuard>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+              <Route path="/module/:moduleId" element={<RequireAuth><ModulePage /></RequireAuth>} />
+              <Route path="/record/:code" element={<RequireAuth><RecordDetail /></RequireAuth>} />
+              <Route path="/audit" element={<RequireAuth><AuditPage /></RequireAuth>} />
+              <Route path="/archive" element={<RequireAuth><ArchivePage /></RequireAuth>} />
+              <Route path="/risk-management" element={<RequireAuth><RiskManagementPage /></RequireAuth>} />
+              <Route path="/admin" element={<AdminGate />} />
+              <Route path="/admin/accounts" element={<AdminAccessGuard><AdminAccounts /></AdminAccessGuard>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </QueryClientProvider>
 );
+
 
 export default App;
