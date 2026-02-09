@@ -128,6 +128,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (supabase && !supabaseDisabled) {
         const selectOnce = async () => {
           const { data, error } = await supabase.from("profiles").select("*");
+          if (error) {
+            setSupabaseDisabled(true);
+          }
           return { rows: Array.isArray(data) ? data : [], error };
         };
         let { rows, error } = await selectOnce();
@@ -150,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error = res.error;
             hasAdmin = rows.some(r => String(r.email).toLowerCase() === "admin@local");
           } else {
-            // keep Supabase enabled; surface errors via UI flows instead
+            setSupabaseDisabled(true);
           }
         }
         const mapped = rows.map((r: ProfileRow) => ({
@@ -314,7 +317,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: newUser.role,
         active: newUser.active,
         last_login_at: newUser.lastLoginAt || 0,
-      }).then(() => void 0).catch(() => void 0);
+      }).then(() => void 0).catch(() => {
+        setSupabaseDisabled(true);
+      });
     }
   }, [users]);
 
@@ -351,7 +356,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const reloadUsers = React.useCallback(async () => {
     const run = async () => {
       if (supabase && !supabaseDisabled) {
-        const { data } = await supabase.from("profiles").select("*");
+        const { data, error } = await supabase.from("profiles").select("*");
+        if (error) {
+          setSupabaseDisabled(true);
+          const local = loadUsersLocal();
+          setUsers(local);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = local.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
+          return;
+        }
         const rows = Array.isArray(data) ? data : [];
         const mapped = rows.map((r: ProfileRow) => ({
           id: r.id,
