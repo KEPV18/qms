@@ -1,10 +1,44 @@
-import axios from 'axios';
+function getBaseUrl(req) {
+    const forwardedHost = req.headers['x-forwarded-host'];
+    const host = (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) || req.headers.host || 'localhost:3001';
+
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    let proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto);
+    if (!proto) {
+        proto = host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+    }
+
+    return `${proto}://${host}`;
+}
+
+function pickRedirectUri(req) {
+    const configured = process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || '';
+    const candidates = configured
+        .split(',')
+        .map(u => u.trim())
+        .filter(Boolean);
+
+    const dynamic = `${getBaseUrl(req)}/api/auth/callback`;
+    if (candidates.length === 0) return dynamic;
+
+    const currentBase = getBaseUrl(req);
+    const match = candidates.find((u) => {
+        try {
+            return new URL(u).origin === currentBase;
+        } catch {
+            return false;
+        }
+    });
+
+    // Important: never force a different deployment host (can cause Vercel 404 DEPLOYMENT_NOT_FOUND).
+    // If no candidate matches current host, use dynamic current-host callback.
+    return match || dynamic;
+}
 
 export default async function handler(req, res) {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
     const REDIRECT_URI = process.env.REDIRECT_URI;
-    const PROD_HOST = 'qms-zeta.vercel.app';
 
     // Health check logic inside the auth handler for debugging env vars
     if (req.query.health === 'true') {
@@ -13,6 +47,8 @@ export default async function handler(req, res) {
             hasClientId: !!GOOGLE_CLIENT_ID,
             hasClientSecret: !!GOOGLE_CLIENT_SECRET,
             hasRedirectUri: !!REDIRECT_URI,
+            resolvedRedirectUri: pickRedirectUri(req),
+            requestBaseUrl: getBaseUrl(req),
             envKeys: Object.keys(process.env).filter(k => !k.startsWith('VERCEL_')),
         });
     }
@@ -27,11 +63,10 @@ export default async function handler(req, res) {
 
     const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'];
     const encodedScopes = encodeURIComponent(SCOPES.join(' '));
-    
-    // Fallback URI if not set (though it should be set in Vercel)
-    const finalRedirectUri = REDIRECT_URI || `https://${PROD_HOST}/api/auth/callback`;
+    const finalRedirectUri = pickRedirectUri(req);
+    const state = encodeURIComponent(JSON.stringify({ redirectUri: finalRedirectUri }));
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${finalRedirectUri}&response_type=code&scope=${encodedScopes}&access_type=offline&prompt=consent`;
-    
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(finalRedirectUri)}&response_type=code&scope=${encodedScopes}&access_type=offline&prompt=consent&state=${state}`;
+
     res.redirect(authUrl);
 }
