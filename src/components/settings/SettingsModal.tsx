@@ -20,6 +20,13 @@ interface SettingsModalProps {
     onOpenChange: (open: boolean) => void;
 }
 
+const isGoogleTokenIssue = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    return lowerMessage.includes('failed to refresh token')
+        || lowerMessage.includes('no refresh token')
+        || lowerMessage.includes('no access token');
+};
+
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const { toast } = useToast();
     const navigate = useNavigate();
@@ -31,6 +38,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [oldPass, setOldPass] = useState("");
     const [newPass, setNewPass] = useState("");
+    const needsGoogleAuth = driveStatus === 'error';
 
     useEffect(() => {
         // Check local storage or system preference
@@ -66,6 +74,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 setDriveStatus('error');
                 setDriveMessage(result.message);
                 toast({ title: "Drive Permission Failed", description: result.message, variant: "destructive" });
+
+                if (isGoogleTokenIssue(result.message)) {
+                    toast({ title: "Google OAuth", description: "جاري فتح صفحة المصادقة مع Google..." });
+                    handleGoogleSignIn();
+                }
             }
         } catch (error: any) {
             setDriveStatus('error');
@@ -89,6 +102,17 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         } catch (error) {
             setServerStatus('offline');
             toast({ title: "Server Connection Failed", description: "Network error.", variant: "destructive" });
+        }
+    };
+
+    const handleGoogleSignIn = () => {
+        const isDev = import.meta.env.DEV;
+        const apiBase = isDev ? 'http://localhost:3001' : '';
+        const authUrl = `${apiBase}/api/auth`;
+        const popup = window.open(authUrl, '_blank', 'noopener,noreferrer');
+
+        if (!popup) {
+            window.location.href = authUrl;
         }
     };
 
@@ -167,15 +191,26 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                     )}
                                 </CardContent>
                                 <CardFooter>
-                                    <Button
-                                        variant={driveStatus === 'success' ? "outline" : "default"}
-                                        onClick={handleCheckDrive}
-                                        disabled={driveStatus === 'checking'}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        {driveStatus === 'checking' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                        Run Permission Check
-                                    </Button>
+                                    <div className="w-full flex flex-col sm:flex-row gap-2">
+                                        <Button
+                                            variant={driveStatus === 'success' ? "outline" : "default"}
+                                            onClick={handleCheckDrive}
+                                            disabled={driveStatus === 'checking'}
+                                            className="w-full sm:w-auto"
+                                        >
+                                            {driveStatus === 'checking' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                            Run Permission Check
+                                        </Button>
+                                        {needsGoogleAuth && (
+                                            <Button
+                                                variant="secondary"
+                                                onClick={handleGoogleSignIn}
+                                                className="w-full sm:w-auto"
+                                            >
+                                                Sign in with Google
+                                            </Button>
+                                        )}
+                                    </div>
                                 </CardFooter>
                             </Card>
 

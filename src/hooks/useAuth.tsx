@@ -20,7 +20,7 @@ type AuthContextValue = {
   users: AppUser[];
   login: (email: string, password: string) => { ok: boolean; code: string; message: string; user?: AppUser; backend: "supabase" | "local" };
   logout: () => void;
-  addUser: (user: Omit<AppUser, "id">) => void;
+  addUser: (user: Omit<AppUser, "id">) => Promise<{ ok: boolean; message?: string }>;
   updateUser: (id: string, updates: Partial<AppUser>) => void;
   removeUser: (id: string) => void;
   changePassword: (id: string, oldPass: string, newPass: string) => boolean;
@@ -164,8 +164,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           needsApprovalNotification: false,
         })) as AppUser[];
         let mergedArr = mapped;
-        const hasAdmin = mergedArr.some(u => u.email.toLowerCase() === "admin@local");
-        if (!hasAdmin) {
+        const hasAdminInMerged = mergedArr.some(u => u.email.toLowerCase() === "admin@local");
+        if (!hasAdminInMerged) {
           const seeded: AppUser = {
             id: crypto.randomUUID(),
             name: "admin",
@@ -228,18 +228,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     bootstrap();
+  }, [supabaseDisabled]);
+
+  React.useEffect(() => {
     const userId = loadSession();
-    if (userId) {
-      if (supabase) {
-        const u = users.find(x => x.id === userId) || null;
-        setUser(u);
-      } else {
-        // prefer Supabase; if it fails, keep current session state
-        const u = users.find(x => x.id === userId) || null;
-        setUser(u);
-      }
+    if (!userId) {
+      setUser(null);
+      return;
     }
-  }, []);
+    const current = users.find(x => x.id === userId) || null;
+    setUser(current);
+  }, [users]);
 
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -255,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  }, [users]);
 
   const login = React.useCallback((email: string, password: string) => {
     const backend: "supabase" | "local" = supabase && !supabaseDisabled ? "supabase" : "local";
@@ -286,6 +285,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return x;
     });
     setUsers(updated);
+    if (!supabase || supabaseDisabled) {
+      saveUsersLocal(updated);
+    }
     if (supabase) {
       supabase.from("profiles").update({ last_login_at: Date.now() }).eq("id", u.id)
         .then(() => void 0)
@@ -294,19 +296,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(u);
     saveSession(u.id);
     return { ok: true, code: "ok", message: "تم تسجيل الدخول", user: u, backend };
-  }, [users]);
+  }, [users, supabaseDisabled]);
 
   const logout = React.useCallback(() => {
     setUser(null);
     saveSession(null);
   }, []);
 
-  const addUser = React.useCallback((userInput: Omit<AppUser, "id">) => {
+  const addUser = React.useCallback(async (userInput: Omit<AppUser, "id">) => {
     const newUser: AppUser = { ...userInput, id: crypto.randomUUID() };
-    const updated = [...users, newUser];
-    setUsers(updated);
-    if (supabase) {
-      supabase.from("profiles").insert({
+
+    if (supabase && !supabaseDisabled) {
+      const { error } = await supabase.from("profiles").insert({
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
@@ -314,13 +315,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: newUser.role,
         active: newUser.active,
         last_login_at: newUser.lastLoginAt || 0,
-      }).then(() => void 0).catch(() => void 0);
+      });
+
+      if (!error) {
+        setUsers(prev => [...prev, newUser]);
+        return { ok: true };
+      }
+
+      console.error("Failed to create user in Supabase:", error.message);
+      setSupabaseDisabled(true);
+
+      try {
+        const created = await apiFetch<AppUser>("/api/users", {
+          method: "POST",
+          body: JSON.stringify(newUser),
+        });
+        setUsers(prev => [...prev, created]);
+        return { ok: true, message: "تم إنشاء الحساب عبر الخادم المحلي لأن Supabase رفض العملية." };
+      } catch (apiError) {
+        console.error("Fallback /api/users create failed:", apiError);
+      }
     }
-  }, [users]);
+
+    const updated = [...users, newUser];
+    setUsers(updated);
+    saveUsersLocal(updated);
+    return { ok: true, message: "تم إنشاء الحساب محلياً على هذا المتصفح." };
+  }, [users, supabaseDisabled]);
 
   const updateUser = React.useCallback((id: string, updates: Partial<AppUser>) => {
     const updated = users.map(u => (u.id === id ? { ...u, ...updates } : u));
     setUsers(updated);
+    if (!supabase || supabaseDisabled) {
+      saveUsersLocal(updated);
+    }
     if (supabase) {
       supabase.from("profiles").update({
         name: updates.name,
@@ -334,11 +362,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user && user.id === id) {
       setUser({ ...user, ...updates });
     }
-  }, [users, user]);
+  }, [users, user, supabaseDisabled]);
 
   const removeUser = React.useCallback((id: string) => {
     const updated = users.filter(u => u.id !== id);
     setUsers(updated);
+    if (!supabase || supabaseDisabled) {
+      saveUsersLocal(updated);
+    }
     if (supabase) {
       supabase.from("profiles").delete().eq("id", id).then(() => void 0).catch(() => void 0);
     }
@@ -346,7 +377,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       saveSession(null);
     }
-  }, [users, user]);
+  }, [users, user, supabaseDisabled]);
   
   const reloadUsers = React.useCallback(async () => {
     const run = async () => {
@@ -370,11 +401,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(u);
         }
       } else {
-        setUsers([]);
+        try {
+          const existing = await apiFetch<AppUser[]>("/api/users");
+          setUsers(existing);
+        } catch {
+          const localUsers = loadUsersLocal();
+          setUsers(localUsers);
+        }
       }
     };
     await run();
-  }, []);
+  }, [supabaseDisabled]);
 
   const value: AuthContextValue = {
     user,

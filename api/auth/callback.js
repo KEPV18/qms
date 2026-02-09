@@ -1,10 +1,83 @@
 import axios from 'axios';
 
+function getBaseUrl(req) {
+    const forwardedHost = req.headers['x-forwarded-host'];
+    const host = (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) || req.headers.host || 'localhost:3001';
+
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    let proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto);
+    if (!proto) {
+        proto = host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+    }
+
+    return `${proto}://${host}`;
+}
+
+function readRedirectUriFromState(rawState) {
+    if (!rawState || typeof rawState !== 'string') return undefined;
+
+    try {
+        const decoded = decodeURIComponent(rawState);
+        const parsed = JSON.parse(decoded);
+        return typeof parsed?.redirectUri === 'string' ? parsed.redirectUri : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+function isValidCallbackUri(uri) {
+    try {
+        const parsed = new URL(uri);
+        return ['/api/auth/callback', '/oauth2callback', '/api/auth/google/callback'].includes(parsed.pathname);
+    } catch {
+        return false;
+    }
+}
+
+function buildLocalFallback(origin) {
+    return `${origin}/oauth2callback`;
+}
+
+function pickRedirectUri(req) {
+    const configured = process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || '';
+    const candidates = configured
+        .split(',')
+        .map(u => u.trim())
+        .filter(Boolean)
+        .filter(isValidCallbackUri);
+
+    const origin = getBaseUrl(req);
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+
+    const match = candidates.find((u) => {
+        try {
+            return new URL(u).origin === origin;
+        } catch {
+            return false;
+        }
+    });
+    if (match) return match;
+
+    if (isLocal) {
+        // Google console غالباً عنده localhost على /oauth2callback
+        return buildLocalFallback(origin);
+    }
+
+    // لو مفيش تطابق للدومين الحالي نستخدم أول URI مُعدّ مسبقاً لتجنب redirect_uri_mismatch.
+    // ويُفضّل يكون أول عنصر هو الدومين الأساسي الثابت.
+    if (candidates.length > 0) {
+        return candidates[0];
+    }
+
+    return `${origin}/api/auth/callback`;
+}
+
 export default async function handler(req, res) {
-    const { code } = req.query;
+    const { code, state } = req.query;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REDIRECT_URI || `https://qms-zeta.vercel.app/api/auth/callback`;
+    const redirectUriFromState = readRedirectUriFromState(state);
+    const REDIRECT_URI = redirectUriFromState || pickRedirectUri(req);
 
     if (!code) {
         return res.status(400).send('No code provided');
