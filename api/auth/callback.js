@@ -4,7 +4,32 @@ export default async function handler(req, res) {
     const { code } = req.query;
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REDIRECT_URI || `https://qms-zeta.vercel.app/api/auth/callback`;
+    
+    // UPDATED: Dynamic Redirect URI Logic to match api/auth/index.js
+    // This is CRITICAL: The URI sent here MUST match the one sent in the initial auth request.
+    const PROD_HOST = 'qms-git-main-kepv18s-projects.vercel.app';
+    let REDIRECT_URI;
+
+    // 1. If running locally (dev), use localhost
+    if (!process.env.VERCEL) {
+        REDIRECT_URI = 'http://localhost:3001/api/auth/callback';
+    } 
+    // 2. Otherwise, check if the current request host is one of the allowed redirect URIs
+    else {
+        const ALLOWED_HOSTS = [
+            'qms-zeta.vercel.app',
+            'qms-820dunivc-kepv18s-projects.vercel.app',
+            'qms-git-main-kepv18s-projects.vercel.app'
+        ];
+
+        const host = req.headers.host;
+        
+        if (ALLOWED_HOSTS.includes(host)) {
+            REDIRECT_URI = `https://${host}/api/auth/callback`;
+        } else {
+            REDIRECT_URI = `https://${PROD_HOST}/api/auth/callback`;
+        }
+    }
 
     if (!code) {
         return res.status(400).send('No code provided');
