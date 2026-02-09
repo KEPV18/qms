@@ -1,95 +1,125 @@
 function getBaseUrl(req) {
-    const forwardedHost = req.headers['x-forwarded-host'];
-    const host = (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) || req.headers.host || 'localhost:3001';
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host =
+    (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) ||
+    req.headers.host ||
+    "localhost:3001";
 
-    const forwardedProto = req.headers['x-forwarded-proto'];
-    let proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto);
-    if (!proto) {
-        proto = host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
-    }
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  let proto = Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto;
 
-    return `${proto}://${host}`;
+  if (!proto) {
+    proto =
+      host.includes("localhost") || host.startsWith("127.0.0.1")
+        ? "http"
+        : "https";
+  }
+
+  return `${proto}://${host}`;
 }
 
 function isValidCallbackUri(uri) {
-    try {
-        const parsed = new URL(uri);
-        return ['/api/auth/callback', '/oauth2callback', '/api/auth/google/callback'].includes(parsed.pathname);
-    } catch {
-        return false;
-    }
-}
-
-function buildLocalFallback(origin) {
-    return `${origin}/oauth2callback`;
+  try {
+    const parsed = new URL(uri);
+    // اسمح فقط بالـ callback paths اللي ممكن تكون مسجلة عندك
+    return ["/api/auth/callback", "/oauth2callback"].includes(parsed.pathname);
+  } catch {
+    return false;
+  }
 }
 
 function pickRedirectUri(req) {
-    const configured = process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || '';
-    const candidates = configured
-        .split(',')
-        .map(u => u.trim())
-        .filter(Boolean)
-        .filter(isValidCallbackUri);
+  const configured =
+    process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || "";
 
-    const origin = getBaseUrl(req);
-    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+  const candidates = configured
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean)
+    .filter(isValidCallbackUri);
 
-    const match = candidates.find((u) => {
-        try {
-            return new URL(u).origin === origin;
-        } catch {
-            return false;
-        }
-    });
-    if (match) return match;
+  const origin = getBaseUrl(req);
+  const isLocal = origin.includes("localhost") || origin.includes("127.0.0.1");
 
-    if (isLocal) {
-        // Google console غالباً عنده localhost على /oauth2callback
-        return buildLocalFallback(origin);
+  // Safe default on current origin (Vercel-safe)
+  const dynamic = `${origin}/api/auth/callback`;
+
+  // لو مفيش candidates خالص
+  if (candidates.length === 0) {
+    // Local fallback لو Google Console مسجل localhost/oauth2callback
+    return isLocal ? `${origin}/oauth2callback` : dynamic;
+  }
+
+  // اختار candidate بنفس origin الحالي فقط
+  const match = candidates.find((u) => {
+    try {
+      return new URL(u).origin === origin;
+    } catch {
+      return false;
     }
+  });
 
-    // لو مفيش تطابق للدومين الحالي نستخدم أول URI مُعدّ مسبقاً لتجنب redirect_uri_mismatch.
-    // ويُفضّل يكون أول عنصر هو الدومين الأساسي الثابت.
-    if (candidates.length > 0) {
-        return candidates[0];
-    }
+  if (match) return match;
 
-    return `${origin}/api/auth/callback`;
+  // Local fallback
+  if (isLocal) return `${origin}/oauth2callback`;
+
+  // مهم جداً: ما تختارش candidate على origin مختلف (بيكسر Vercel)
+  return dynamic;
 }
 
 export default async function handler(req, res) {
-    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REDIRECT_URI;
+  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+  const REDIRECT_URI = process.env.REDIRECT_URI;
 
-    // Health check logic inside the auth handler for debugging env vars
-    if (req.query.health === 'true') {
-        return res.json({
-            status: 'ok',
-            hasClientId: !!GOOGLE_CLIENT_ID,
-            hasClientSecret: !!GOOGLE_CLIENT_SECRET,
-            hasRedirectUri: !!REDIRECT_URI,
-            resolvedRedirectUri: pickRedirectUri(req),
-            requestBaseUrl: getBaseUrl(req),
-            envKeys: Object.keys(process.env).filter(k => !k.startsWith('VERCEL_')),
-        });
-    }
+  // Health check for debugging env vars
+  if (req.query.health === "true") {
+    return res.json({
+      status: "ok",
+      hasClientId: !!GOOGLE_CLIENT_ID,
+      hasClientSecret: !!GOOGLE_CLIENT_SECRET,
+      hasRedirectUri: !!REDIRECT_URI,
+      resolvedRedirectUri: pickRedirectUri(req),
+      requestBaseUrl: getBaseUrl(req),
+      envKeys: Object.keys(process.env).filter((k) => !k.startsWith("VERCEL_")),
+    });
+  }
 
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-        console.error('Missing Env Vars:', {
-            hasClientId: !!GOOGLE_CLIENT_ID,
-            hasClientSecret: !!GOOGLE_CLIENT_SECRET
-        });
-        return res.status(500).send('Configuration Error: Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in Vercel Environment Variables.');
-    }
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    console.error("Missing Env Vars:", {
+      hasClientId: !!GOOGLE_CLIENT_ID,
+      hasClientSecret: !!GOOGLE_CLIENT_SECRET,
+    });
+    return res
+      .status(500)
+      .send(
+        "Configuration Error: Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in Vercel Environment Variables."
+      );
+  }
 
-    const SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive'];
-    const encodedScopes = encodeURIComponent(SCOPES.join(' '));
-    const finalRedirectUri = pickRedirectUri(req);
-    const state = encodeURIComponent(JSON.stringify({ redirectUri: finalRedirectUri }));
+  const SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+  ];
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(finalRedirectUri)}&response_type=code&scope=${encodedScopes}&access_type=offline&prompt=consent&state=${state}`;
+  const encodedScopes = encodeURIComponent(SCOPES.join(" "));
+  const finalRedirectUri = pickRedirectUri(req);
 
-    res.redirect(authUrl);
+  // نخزن redirectUri في state عشان callback يستخدم نفس الـ uri بالظبط
+  const state = encodeURIComponent(
+    JSON.stringify({ redirectUri: finalRedirectUri })
+  );
+
+  const authUrl =
+    `https://accounts.google.com/o/oauth2/v2/auth` +
+    `?client_id=${GOOGLE_CLIENT_ID}` +
+    `&redirect_uri=${encodeURIComponent(finalRedirectUri)}` +
+    `&response_type=code` +
+    `&scope=${encodedScopes}` +
+    `&access_type=offline` +
+    `&prompt=consent` +
+    `&state=${state}`;
+
+  return res.redirect(authUrl);
 }
