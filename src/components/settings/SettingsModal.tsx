@@ -54,9 +54,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     "idle" | "checking" | "success" | "error"
   >("idle");
   const [driveMessage, setDriveMessage] = useState("");
+
   const [serverStatus, setServerStatus] = useState<
     "idle" | "checking" | "online" | "offline"
   >("idle");
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
@@ -68,6 +70,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       driveMessage.toLowerCase().includes("failed to refresh token"));
 
   useEffect(() => {
+    // Check local storage or system preference
     const isDark =
       localStorage.getItem("theme") === "dark" ||
       (!localStorage.getItem("theme") &&
@@ -97,6 +100,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
     const popup = window.open(authUrl, "_blank", "noopener,noreferrer");
     if (!popup) {
+      // Popup blocked -> fallback to same tab
       window.location.href = authUrl;
     }
   };
@@ -211,6 +215,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
     setOldPass("");
     setNewPass("");
+
     toast({
       title: "Password updated",
       description: "Your password has been changed",
@@ -258,8 +263,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     )}
                   </div>
                   <CardDescription>
-                    Verifies that the QMS Platform can read and write files to
-                    your Google Drive.
+                    Verifies that the QMS Platform can read and write files to your Google Drive.
                   </CardDescription>
                 </CardHeader>
 
@@ -333,8 +337,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CardContent>
                   {serverStatus === "offline" && (
                     <p className="text-sm text-destructive">
-                      Could not connect to the server. Please check your internet
-                      connection or try again later.
+                      Could not connect to the server. Please check your internet connection or try again later.
                     </p>
                   )}
                 </CardContent>
@@ -363,7 +366,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CardTitle className="flex items-center gap-2">
                   <User className="w-5 h-5" /> Account Information
                 </CardTitle>
-                <CardDescription>Manage your session and account.</CardDescription>
+                <CardDescription>Manage your connected Google Account.</CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -391,9 +394,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     </div>
                     <div>
                       <Label>Permissions</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Role-based permissions
-                      </p>
+                      <p className="text-sm text-muted-foreground">Role-based permissions</p>
                     </div>
                   </div>
                 )}
@@ -445,9 +446,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Compact Mode</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Reduce spacing in lists and tables.
-                    </p>
+                    <p className="text-xs text-muted-foreground">Reduce spacing in lists and tables.</p>
                   </div>
                   <Switch disabled />
                 </div>
