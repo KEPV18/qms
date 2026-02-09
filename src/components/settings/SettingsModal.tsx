@@ -44,6 +44,15 @@ interface SettingsModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const isGoogleTokenIssue = (message: string) => {
+  const lowerMessage = (message || "").toLowerCase();
+  return (
+    lowerMessage.includes("failed to refresh token") ||
+    lowerMessage.includes("no refresh token") ||
+    lowerMessage.includes("no access token")
+  );
+};
+
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -64,10 +73,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   const [newPass, setNewPass] = useState("");
 
   const needsGoogleAuth =
-    driveStatus === "error" &&
-    (driveMessage.toLowerCase().includes("no access token") ||
-      driveMessage.toLowerCase().includes("no refresh token") ||
-      driveMessage.toLowerCase().includes("failed to refresh token"));
+    driveStatus === "error" && isGoogleTokenIssue(driveMessage);
 
   useEffect(() => {
     // Check local storage or system preference
@@ -133,13 +139,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       });
 
       // Auto-start OAuth only for token-related issues
-      const lowerMessage = (result.message || "").toLowerCase();
-      const shouldStartOAuth =
-        lowerMessage.includes("failed to refresh token") ||
-        lowerMessage.includes("no refresh token") ||
-        lowerMessage.includes("no access token");
-
-      if (shouldStartOAuth) {
+      if (isGoogleTokenIssue(result.message)) {
         toast({
           title: "Google OAuth",
           description: "Opening Google authentication...",
@@ -263,7 +263,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     )}
                   </div>
                   <CardDescription>
-                    Verifies that the QMS Platform can read and write files to your Google Drive.
+                    Verifies that the QMS Platform can read and write files to
+                    your Google Drive.
                   </CardDescription>
                 </CardHeader>
 
@@ -337,7 +338,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CardContent>
                   {serverStatus === "offline" && (
                     <p className="text-sm text-destructive">
-                      Could not connect to the server. Please check your internet connection or try again later.
+                      Could not connect to the server. Please check your
+                      internet connection or try again later.
                     </p>
                   )}
                 </CardContent>
@@ -394,7 +396,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     </div>
                     <div>
                       <Label>Permissions</Label>
-                      <p className="text-sm text-muted-foreground">Role-based permissions</p>
+                      <p className="text-sm text-muted-foreground">
+                        Role-based permissions
+                      </p>
                     </div>
                   </div>
                 )}
@@ -415,7 +419,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       onChange={(e) => setNewPass(e.target.value)}
                     />
                   </div>
-                  <Button className="mt-2" variant="outline" onClick={handleChangePassword}>
+                  <Button
+                    className="mt-2"
+                    variant="outline"
+                    onClick={handleChangePassword}
+                  >
                     Update Password
                   </Button>
                 </div>
@@ -446,7 +454,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Compact Mode</Label>
-                    <p className="text-xs text-muted-foreground">Reduce spacing in lists and tables.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Reduce spacing in lists and tables.
+                    </p>
                   </div>
                   <Switch disabled />
                 </div>
@@ -454,7 +464,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Dark Mode</Label>
-                    <p className="text-xs text-muted-foreground">Toggle dark theme.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Toggle dark theme.
+                    </p>
                   </div>
                   <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
                 </div>

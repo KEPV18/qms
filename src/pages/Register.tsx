@@ -22,11 +22,18 @@ export default function Register() {
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { addUser, users } = useAuth();
+  const { addUser, users, reloadUsers } = useAuth();
   const { toast } = useToast();
 
   const handleRegister = async () => {
     setIsLoading(true);
+
+    // Make sure users list is fresh before checking duplicates
+    try {
+      await reloadUsers();
+    } catch {
+      // ignore - we can still try local users array
+    }
 
     if (!name || !email || !password || password !== confirm) {
       setIsLoading(false);
