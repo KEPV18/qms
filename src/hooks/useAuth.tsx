@@ -228,18 +228,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     bootstrap();
+  }, [supabaseDisabled]);
+
+  React.useEffect(() => {
     const userId = loadSession();
-    if (userId) {
-      if (supabase) {
-        const u = users.find(x => x.id === userId) || null;
-        setUser(u);
-      } else {
-        // prefer Supabase; if it fails, keep current session state
-        const u = users.find(x => x.id === userId) || null;
-        setUser(u);
-      }
+    if (!userId) {
+      setUser(null);
+      return;
     }
-  }, []);
+    const current = users.find(x => x.id === userId) || null;
+    setUser(current);
+  }, [users]);
 
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -255,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  }, [users]);
 
   const login = React.useCallback((email: string, password: string) => {
     const backend: "supabase" | "local" = supabase && !supabaseDisabled ? "supabase" : "local";
@@ -412,7 +411,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     await run();
-  }, []);
+  }, [supabaseDisabled]);
 
   const value: AuthContextValue = {
     user,

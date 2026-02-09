@@ -14,11 +14,13 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { addUser, users } = useAuth();
+  const { addUser, users, reloadUsers } = useAuth();
   const { toast } = useToast();
 
   const handleRegister = async () => {
     setIsLoading(true);
+    await reloadUsers();
+
     if (!name || !email || !password || password !== confirm) {
       setIsLoading(false);
       toast({ title: "بيانات غير مكتملة", description: "تأكد من إدخال كل الحقول وتطابق كلمة المرور", variant: "destructive" });

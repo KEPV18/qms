@@ -20,6 +20,13 @@ interface SettingsModalProps {
     onOpenChange: (open: boolean) => void;
 }
 
+const isGoogleTokenIssue = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    return lowerMessage.includes('failed to refresh token')
+        || lowerMessage.includes('no refresh token')
+        || lowerMessage.includes('no access token');
+};
+
 export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const { toast } = useToast();
     const navigate = useNavigate();
@@ -68,12 +75,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 setDriveMessage(result.message);
                 toast({ title: "Drive Permission Failed", description: result.message, variant: "destructive" });
 
-                const lowerMessage = result.message.toLowerCase();
-                const shouldStartOAuth = lowerMessage.includes('failed to refresh token')
-                    || lowerMessage.includes('no refresh token')
-                    || lowerMessage.includes('no access token');
-
-                if (shouldStartOAuth) {
+                if (isGoogleTokenIssue(result.message)) {
                     toast({ title: "Google OAuth", description: "جاري فتح صفحة المصادقة مع Google..." });
                     handleGoogleSignIn();
                 }

@@ -25,12 +25,22 @@ function readRedirectUriFromState(rawState) {
     }
 }
 
+function isValidCallbackUri(uri) {
+    try {
+        const parsed = new URL(uri);
+        return parsed.pathname === '/api/auth/callback';
+    } catch {
+        return false;
+    }
+}
+
 function pickRedirectUri(req) {
     const configured = process.env.REDIRECT_URI_CANDIDATES || process.env.REDIRECT_URI || '';
     const candidates = configured
         .split(',')
         .map(u => u.trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .filter(isValidCallbackUri);
 
     const dynamic = `${getBaseUrl(req)}/api/auth/callback`;
     if (candidates.length === 0) return dynamic;
