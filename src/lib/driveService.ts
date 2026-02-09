@@ -622,3 +622,49 @@ export async function checkAndCleanupExpiredArchives(): Promise<number> {
     return 0;
   }
 }
+
+export async function createDriveFolder(name: string, parentFolderId?: string): Promise<{ id: string; name: string }> {
+  const token = await getAccessToken();
+  if (!token) throw new Error("No access token for Drive operations");
+  const url = `${DRIVE_API_BASE}/files?key=${API_KEY}`;
+  const body: any = { name, mimeType: "application/vnd.google-apps.folder" };
+  if (parentFolderId) body.parents = [parentFolderId];
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to create folder");
+  }
+  const data = await res.json();
+  return { id: data.id, name: data.name };
+}
+
+export async function uploadFileToDrive(file: File, folderLink?: string, nameOverride?: string): Promise<DriveFile | null> {
+  const token = await getAccessToken();
+  if (!token) throw new Error("No access token for Drive operations");
+  let parentId: string | undefined;
+  if (folderLink) {
+    const fid = extractFolderId(folderLink);
+    if (fid) parentId = fid;
+  }
+  const metadata: any = {};
+  if (nameOverride) metadata.name = nameOverride;
+  if (parentId) metadata.parents = [parentId];
+  const form = new FormData();
+  form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+  form.append("file", file, nameOverride || file.name);
+  const url = `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink&key=${API_KEY}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Upload failed");
+  }
+  return await res.json();
+}
