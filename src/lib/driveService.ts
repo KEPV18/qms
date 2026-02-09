@@ -1,7 +1,7 @@
 // Google Drive API Service
 // Handles interaction with Google Drive to count and list files in folders
 
-import { getAccessToken } from './auth';
+import { getAccessToken, getAccessTokenWithReason } from './auth';
 
 const API_KEY = "AIzaSyDltPnR5hhwfDrjlwi7lS78R_kDIZbQpWo";
 const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
@@ -498,9 +498,12 @@ export async function permanentlyDeleteDriveFile(fileId: string): Promise<boolea
  */
 export async function checkDriveWritePermission(): Promise<{ success: boolean; message: string }> {
   try {
-    const token = await getAccessToken();
+    const { token, reason } = await getAccessTokenWithReason();
     if (!token) {
-      return { success: false, message: "No access token available. Please sign in." };
+      return {
+        success: false,
+        message: reason || "No access token available. Please sign in."
+      };
     }
 
     // 1. Try to create a file
