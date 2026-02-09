@@ -68,6 +68,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       driveMessage.toLowerCase().includes("failed to refresh token"));
 
   useEffect(() => {
+    // Check local storage or system preference
     const isDark =
       localStorage.getItem("theme") === "dark" ||
       (!localStorage.getItem("theme") &&
@@ -155,8 +156,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   const handleCheckServer = async () => {
     setServerStatus("checking");
-
+    // Simple ping to backend if available, or just verify auth endpoint
     try {
+      // For now, checks if we can hit the auth endpoint which should be up
       const response = await fetch("/api/auth?health=true");
       if (response.ok) {
         setServerStatus("online");
@@ -190,10 +192,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
 
   const handleRefreshSession = async () => {
     await queryClient.invalidateQueries();
-    toast({
-      title: "Session Refreshed",
-      description: "Data cache invalidated.",
-    });
+    toast({ title: "Session Refreshed", description: "Data cache invalidated." });
   };
 
   const handleChangePassword = () => {
@@ -258,8 +257,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     )}
                   </div>
                   <CardDescription>
-                    Verifies that the QMS Platform can read and write files to
-                    your Google Drive.
+                    Verifies that the QMS Platform can read and write files to your Google Drive.
                   </CardDescription>
                 </CardHeader>
 
@@ -271,7 +269,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       <AlertDescription>{driveMessage}</AlertDescription>
                     </Alert>
                   )}
-
                   {driveStatus === "success" && (
                     <Alert className="mb-4 bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800">
                       <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -294,7 +291,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                       )}
                       Run Permission Check
                     </Button>
-
                     {needsGoogleAuth && (
                       <Button
                         variant="secondary"
@@ -329,16 +325,13 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     Checks if the backend API server is reachable.
                   </CardDescription>
                 </CardHeader>
-
                 <CardContent>
                   {serverStatus === "offline" && (
                     <p className="text-sm text-destructive">
-                      Could not connect to the server. Please check your internet
-                      connection or try again later.
+                      Could not connect to the server. Please check your internet connection or try again later.
                     </p>
                   )}
                 </CardContent>
-
                 <CardFooter>
                   <Button
                     variant="outline"
@@ -363,9 +356,8 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CardTitle className="flex items-center gap-2">
                   <User className="w-5 h-5" /> Account Information
                 </CardTitle>
-                <CardDescription>Manage your session and account.</CardDescription>
+                <CardDescription>Manage your connected Google Account.</CardDescription>
               </CardHeader>
-
               <CardContent className="space-y-6">
                 <div className="space-y-1">
                   <Label>Session Status</Label>
@@ -391,9 +383,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     </div>
                     <div>
                       <Label>Permissions</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Role-based permissions
-                      </p>
+                      <p className="text-sm text-muted-foreground">Role-based permissions</p>
                     </div>
                   </div>
                 )}
@@ -419,7 +409,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                   </Button>
                 </div>
               </CardContent>
-
               <CardFooter className="flex justify-between">
                 <Button variant="outline" onClick={handleRefreshSession}>
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -440,7 +429,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                 <CardTitle>Interface Preferences</CardTitle>
                 <CardDescription>Customize your workspace experience.</CardDescription>
               </CardHeader>
-
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
