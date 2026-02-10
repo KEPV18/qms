@@ -412,11 +412,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = [...users, newUser];
     if (!AUTH_LOCAL_DISABLED) {
       setUsers(updated);
+      saveUsersLocal(updated);
     }
     if (supabase) {
       supabase.from("profiles").insert({
         id: newUser.id,
         user_id: newUser.id,
+        name: newUser.name,
         email: newUser.email,
         is_active: !!newUser.active,
         last_login: new Date(0).toISOString(),
@@ -438,9 +440,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = users.map(u => (u.id === id ? { ...u, ...updates } : u));
     if (!AUTH_LOCAL_DISABLED) {
       setUsers(updated);
+      saveUsersLocal(updated);
     }
     if (supabase) {
       const payload: Record<string, unknown> = {};
+      if (typeof updates.name === "string") payload.name = updates.name;
       if (typeof updates.email === "string") payload.email = updates.email;
       if (typeof updates.active === "boolean") payload.is_active = updates.active;
       if (typeof updates.lastLoginAt === "number") payload.last_login = new Date(updates.lastLoginAt).toISOString();
@@ -464,6 +468,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const updated = users.filter(u => u.id !== id);
     if (!AUTH_LOCAL_DISABLED) {
       setUsers(updated);
+      saveUsersLocal(updated);
     }
     if (supabase) {
       supabase.from("user_roles").delete().eq("user_id", id).then(() => void 0).catch(() => void 0);

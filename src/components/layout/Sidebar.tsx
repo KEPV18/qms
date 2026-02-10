@@ -12,7 +12,9 @@ import {
   ChevronDown,
   Shield,
   Archive,
-  AlertTriangle
+  AlertTriangle,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -91,6 +93,7 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const { user } = useAuth();
   const items: NavItem[] =
     user?.role === "admin"
@@ -107,6 +110,15 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
       setExpandedItems(prev => [...prev, pathModule]);
     }
   }, [location.pathname]);
+
+  // Save collapsed state to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', isCollapsed.toString());
+  }, [isCollapsed]);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
   const toggleExpand = (id: string) => {
     setExpandedItems(prev =>
@@ -144,9 +156,21 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
   };
 
   return (
-    <aside className="hidden md:flex md:w-64 bg-sidebar text-sidebar-foreground flex-col h-screen md:fixed md:left-0 md:top-0 z-50">
+    <aside className={cn(
+      "hidden md:flex bg-sidebar text-sidebar-foreground flex-col h-screen md:fixed md:left-0 md:top-0 z-50 transition-all duration-300",
+      isCollapsed ? "md:w-16" : "md:w-64"
+    )}>
+      {/* Collapse Toggle Button */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute -right-3 top-6 z-10 w-6 h-6 bg-sidebar-accent text-sidebar-accent-foreground rounded-full border border-sidebar-border flex items-center justify-center hover:bg-sidebar-accent/80 transition-colors"
+        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {isCollapsed ? <PanelLeftOpen className="w-3 h-3" /> : <PanelLeftClose className="w-3 h-3" />}
+      </button>
+
       {/* Logo */}
-      <div className="p-6 border-b border-sidebar-border">
+      <div className="p-6 border-b border-sidebar-border relative">
         <div
           className="flex items-center gap-3 cursor-pointer"
           onClick={() => {
@@ -154,13 +178,17 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
             onModuleChange("dashboard");
           }}
         >
-          <div className="w-10 h-10 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Shield className="w-6 h-6 text-sidebar-primary-foreground" />
+          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+              <span className="text-indigo-600 font-bold text-xs">QMS</span>
+            </div>
           </div>
-          <div>
-            <h1 className="font-bold text-lg">QMS Platform</h1>
-            <p className="text-xs text-sidebar-foreground/60">ISO 9001:2015</p>
-          </div>
+          {!isCollapsed && (
+            <div>
+              <h1 className="font-bold text-lg">QMS</h1>
+              <p className="text-xs text-sidebar-foreground/60">Quality Management System</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -183,9 +211,9 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
               >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  {!isCollapsed && <span className="font-medium">{item.label}</span>}
                 </div>
-                {item.children && (
+                {!isCollapsed && item.children && (
                   <ChevronDown
                     className={cn(
                       "w-4 h-4 transition-transform duration-200",
@@ -196,7 +224,7 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
               </button>
 
               {/* Sub-items */}
-              {item.children && isExpanded && (
+              {!isCollapsed && item.children && isExpanded && (
                 <div className="ml-8 mt-1 space-y-1 animate-fade-in">
                   {item.children.map((child) => (
                     <button
@@ -220,19 +248,18 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border">
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 px-3 py-2">
+          <div className={cn("flex items-center gap-3 px-3 py-2", isCollapsed && "justify-center")}>
             <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
               <span className="text-sm font-medium">{(user?.name || "User").slice(0,2).toUpperCase()}</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name || "Guest"}</p>
-              <p className="text-xs text-sidebar-foreground/60">{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"}</p>
-            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user?.name || "Guest"}</p>
+                <p className="text-xs text-sidebar-foreground/60">{user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"}</p>
+              </div>
+            )}
           </div>
-          <div className="px-3 py-2 rounded-lg bg-sidebar-primary/10 border border-sidebar-primary/20">
-            <p className="text-[10px] uppercase font-bold text-sidebar-primary tracking-wider mb-1">Created By</p>
-            <p className="text-sm font-semibold text-sidebar-foreground">Ahmed Khaled</p>
-          </div>
+
         </div>
       </div>
     </aside>

@@ -24,13 +24,17 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
     const { toast } = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const { user, logout, changePassword } = useAuth();
+    const { user, logout, changePassword, updateUser } = useAuth();
     const [driveStatus, setDriveStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
     const [driveMessage, setDriveMessage] = useState("");
     const [serverStatus, setServerStatus] = useState<'idle' | 'checking' | 'online' | 'offline'>('idle');
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [oldPass, setOldPass] = useState("");
     const [newPass, setNewPass] = useState("");
+    const [displayName, setDisplayName] = useState(user?.name || "");
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
 
     useEffect(() => {
         // Check local storage or system preference
@@ -40,6 +44,11 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         if (isDark) {
             document.documentElement.classList.add('dark');
         }
+        
+        // Load accent color
+        const savedAccent = localStorage.getItem('accentColor') || 'blue';
+        setAccentColor(savedAccent);
+        document.documentElement.setAttribute('data-accent', savedAccent);
     }, []);
 
     const toggleDarkMode = (checked: boolean) => {
@@ -101,10 +110,6 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         logout();
         navigate("/login");
     };
-    const handleRefreshSession = async () => {
-        await queryClient.invalidateQueries();
-        toast({ title: "Session Refreshed", description: "Data cache invalidated." });
-    };
     const handleChangePassword = () => {
         if (!user) return;
         const ok = changePassword(user.id, oldPass, newPass);
@@ -115,6 +120,38 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
         setOldPass("");
         setNewPass("");
         toast({ title: "Password updated", description: "Your password has been changed" });
+    };
+
+    const handleSaveName = () => {
+        if (!user || !displayName.trim()) return;
+        updateUser(user.id, { name: displayName.trim() });
+        setIsEditingName(false);
+        toast({ title: "Name updated", description: "Your display name has been changed" });
+    };
+
+    const handleCancelNameEdit = () => {
+        setDisplayName(user?.name || "");
+        setIsEditingName(false);
+    };
+
+    const handleAccentColorChange = (color: string) => {
+        setAccentColor(color);
+        localStorage.setItem('accentColor', color);
+        document.documentElement.setAttribute('data-accent', color);
+        toast({ title: "Theme updated", description: `Accent color changed to ${color}` });
+    };
+
+    const handleSidebarToggle = (collapsed: boolean) => {
+        setSidebarCollapsed(collapsed);
+        localStorage.setItem('sidebarCollapsed', collapsed.toString());
+        // Dispatch storage event to update all components
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'sidebarCollapsed',
+            newValue: collapsed.toString(),
+            oldValue: (!collapsed).toString(),
+            storageArea: localStorage
+        }));
+        toast({ title: "Sidebar updated", description: collapsed ? "Sidebar collapsed" : "Sidebar expanded" });
     };
 
     return (
@@ -130,9 +167,9 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                     </DialogDescription>
                 </DialogHeader>
 
-                <Tabs defaultValue="diagnostics" className="w-full">
+                <Tabs defaultValue={user?.role === "admin" ? "diagnostics" : "account"} className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>
+                        {user?.role === "admin" && <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>}
                         <TabsTrigger value="account">Account</TabsTrigger>
                         <TabsTrigger value="general">General</TabsTrigger>
                     </TabsList>
@@ -242,22 +279,36 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                     </div>
                                 </div>
                                 {user && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-4">
                                         <div>
                                             <Label>Name</Label>
-                                            <p className="text-sm font-medium">{user.name}</p>
+                                            {isEditingName ? (
+                                                <div className="flex gap-2 mt-1">
+                                                    <Input 
+                                                        value={displayName} 
+                                                        onChange={(e) => setDisplayName(e.target.value)}
+                                                        placeholder="Enter your name"
+                                                        className="flex-1"
+                                                    />
+                                                    <Button size="sm" onClick={handleSaveName}>Save</Button>
+                                                    <Button size="sm" variant="outline" onClick={handleCancelNameEdit}>Cancel</Button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-medium">{user.name}</p>
+                                                    <Button size="sm" variant="ghost" onClick={() => setIsEditingName(true)}>Edit</Button>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div>
-                                            <Label>Email</Label>
-                                            <p className="text-sm font-medium">{user.email}</p>
-                                        </div>
-                                        <div>
-                                            <Label>Role</Label>
-                                            <p className="text-sm font-medium capitalize">{user.role}</p>
-                                        </div>
-                                        <div>
-                                            <Label>Permissions</Label>
-                                            <p className="text-sm text-muted-foreground">Role-based permissions</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <Label>Email</Label>
+                                                <p className="text-sm font-medium">{user.email}</p>
+                                            </div>
+                                            <div>
+                                                <Label>Role</Label>
+                                                <p className="text-sm font-medium capitalize">{user.role}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -270,11 +321,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                     <Button className="mt-2" variant="outline" onClick={handleChangePassword}>Update Password</Button>
                                 </div>
                             </CardContent>
-                            <CardFooter className="flex justify-between">
-                                <Button variant="outline" onClick={handleRefreshSession}>
-                                    <RefreshCw className="w-4 h-4 mr-2" />
-                                    Refresh Session
-                                </Button>
+                            <CardFooter className="flex justify-end">
                                 <Button variant="destructive" onClick={handleLogout}>
                                     <LogOut className="w-4 h-4 mr-2" />
                                     Logout
@@ -290,14 +337,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                 <CardTitle>Interface Preferences</CardTitle>
                                 <CardDescription>Customize your workspace experience.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <Label>Compact Mode</Label>
-                                        <p className="text-xs text-muted-foreground">Reduce spacing in lists and tables.</p>
-                                    </div>
-                                    <Switch disabled />
-                                </div>
+                            <CardContent className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <div className="space-y-0.5">
                                         <Label>Dark Mode</Label>
@@ -307,6 +347,25 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
                                         checked={isDarkMode}
                                         onCheckedChange={toggleDarkMode}
                                     />
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="space-y-0.5">
+                                        <Label>Accent Color</Label>
+                                        <p className="text-xs text-muted-foreground">Choose your preferred accent color.</p>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {['blue', 'green', 'purple', 'red', 'orange', 'pink'].map((color) => (
+                                            <button
+                                                key={color}
+                                                onClick={() => handleAccentColorChange(color)}
+                                                className={`w-8 h-8 rounded-full border-2 transition-all ${
+                                                    accentColor === color ? 'border-gray-800 dark:border-white scale-110' : 'border-gray-300 dark:border-gray-600'
+                                                }`}
+                                                style={{ backgroundColor: `var(--${color}-500)` }}
+                                                title={color.charAt(0).toUpperCase() + color.slice(1)}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>

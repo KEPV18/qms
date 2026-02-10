@@ -236,9 +236,16 @@ export function RecordBrowser({ record, isFlat = false }: RecordBrowserProps) {
                                             <div>
                                                 <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Review Date</p>
                                                 <p className="text-xs font-semibold">
-                                                    {record.fileReviews?.[file.id]?.reviewDate ? new Date(record.fileReviews[file.id].reviewDate).toLocaleDateString() : "—"}
+                                                    {record.fileReviews?.[file.id]?.reviewDate ? new Date(record.fileReviews[file.id].reviewDate).toLocaleDateString() : 
+                                                     record.reviewDate ? new Date(record.reviewDate).toLocaleDateString() : "—"}
                                                 </p>
                                             </div>
+                                        </div>
+                                        <div className="px-3 py-2 bg-muted/10 rounded-lg border border-border/30">
+                                            <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Audit Notes</p>
+                                            <p className="text-xs font-medium break-words">
+                                                {record.fileReviews?.[file.id]?.comment?.trim() || "—"}
+                                            </p>
                                         </div>
 
                                         <div className="flex gap-2">

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { ModuleCard } from "@/components/dashboard/ModuleCard";
@@ -78,8 +79,19 @@ import { PendingActions } from "@/components/dashboard/PendingActions";
 
 export default function Index() {
   const [activeModule, setActiveModule] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Listen for sidebar collapse changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setSidebarCollapsed(localStorage.getItem('sidebarCollapsed') === 'true');
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Fetch live data from Google Sheets
   const { data: records, isLoading, isError, refetch, dataUpdatedAt } = useQMSData();
@@ -127,7 +139,10 @@ export default function Index() {
     <div className="flex min-h-screen w-full bg-background">
       <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
 
-      <div className="flex-1 flex flex-col md:ml-64 ml-0">
+      <div className={cn(
+        "flex-1 flex flex-col transition-all duration-300 ml-0",
+        sidebarCollapsed ? "md:ml-16" : "md:ml-64"
+      )}>
         <Header />
 
         <main className="flex-1 p-6 overflow-auto">

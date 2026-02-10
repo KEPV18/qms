@@ -71,6 +71,11 @@ export function QuickActions() {
     return records.filter(r => !r.isOverdue && (r.daysUntilNextFill || 0) <= 7);
   }, [records]);
 
+  const complianceDisplay = Math.max(
+    0,
+    Math.min(100, auditSummary.complianceRate || 0)
+  );
+
   const handleSearchFolders = async () => {
     if (!folderSearchTerm || folderSearchTerm.length < 2) {
       setFolderResults([]);
@@ -272,7 +277,11 @@ export function QuickActions() {
               </div>
               <div className="p-3 rounded-md border">
                 <div className="text-sm text-muted-foreground">Compliance</div>
-                <div className="text-xl font-semibold">{Math.round((auditSummary.complianceRate || 0) * 100)}%</div>
+                <div className="text-xl font-semibold">{complianceDisplay}%</div>
+              </div>
+              <div className="p-3 rounded-md border">
+                <div className="text-sm text-muted-foreground">Never Filled</div>
+                <div className="text-xl font-semibold">{zeroRecordForms.length}</div>
               </div>
             </div>
             <div>
@@ -281,7 +290,7 @@ export function QuickActions() {
                 {zeroRecordForms.map(f => (
                   <div key={f.code} className="flex justify-between items-center p-2 rounded border">
                     <div className="text-sm">{f.code} — {f.recordName}</div>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/record/${encodeURIComponent(f.code)}`)}>عرض</Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/record/${encodeURIComponent(f.code)}`)}>View</Button>
                   </div>
                 ))}
                 {zeroRecordForms.length === 0 && <div className="text-sm text-muted-foreground">None</div>}
