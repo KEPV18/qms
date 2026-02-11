@@ -19,6 +19,7 @@ type AuthContextValue = {
   user: AppUser | null;
   users: AppUser[];
   login: (email: string, password: string) => Promise<{ ok: boolean; code: string; message: string; user?: AppUser; backend: "supabase" | "local" }>;
+  loginWithGoogle: () => Promise<{ ok: boolean; code: string; message: string; user?: AppUser }>;
   logout: () => void;
   addUser: (user: Omit<AppUser, "id">) => void;
   updateUser: (id: string, updates: Partial<AppUser>) => void;
@@ -272,6 +273,154 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const reloadUsers = React.useCallback(async () => {
+    const run = async () => {
+      if (supabase && !supabaseDisabled) {
+        const { data, error } = await supabase.from("profiles").select("*");
+        if (error) {
+          setSupabaseDisabled(true);
+          if (!AUTH_LOCAL_DISABLED) {
+            const local = loadUsersLocal();
+            setUsers(local);
+            const currentId = loadSession();
+            if (currentId) {
+              const u = local.find(x => x.id === currentId) || null;
+              setUser(u);
+            }
+          } else {
+            setUsers([]);
+          }
+          return;
+        }
+        const rows = Array.isArray(data) ? data : [];
+        let rolesRows: any[] = [];
+        try {
+          const { data: rolesData } = await supabase.from("user_roles").select("*");
+          rolesRows = Array.isArray(rolesData) ? rolesData : [];
+        } catch { void 0; }
+        const roleByUserId = new Map<string, string>();
+        rolesRows.forEach((r: any) => {
+          if (r && typeof r.user_id === "string" && typeof r.role === "string") {
+            roleByUserId.set(r.user_id, r.role.toLowerCase());
+          }
+        });
+        const mapped = rows.map((r: any) => {
+          const lastLoginRaw = (r.last_login as string) || "";
+          const lastLoginAt = lastLoginRaw ? Date.parse(lastLoginRaw) || 0 : 0;
+          const role = roleByUserId.get(r.user_id || r.id) || "user";
+          return {
+            id: r.user_id || r.id,
+            name: r.name || (typeof r.email === "string" ? String(r.email).split("@")[0] : "user"),
+            email: r.email || "",
+            password: "",
+            role,
+            active: !!(r.is_active ?? false),
+            lastLoginAt,
+            needsApprovalNotification: false,
+          } as AppUser;
+        });
+        setUsers(mapped);
+        setSupabaseDisabled(false);
+        const currentId = loadSession();
+        if (currentId) {
+          const u = mapped.find(x => x.id === currentId) || null;
+          setUser(u);
+        }
+      } else {
+        if (!AUTH_LOCAL_DISABLED) {
+          const local = loadUsersLocal();
+          setUsers(local);
+          const currentId = loadSession();
+          if (currentId) {
+            const u = local.find(x => x.id === currentId) || null;
+            setUser(u);
+          }
+        } else {
+          setUsers([]);
+        }
+      }
+    };
+    await run();
+  }, [supabaseDisabled]);
+
+  React.useEffect(() => {
+    // Listen for auth state changes (OAuth callbacks)
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // User signed in via OAuth
+          const authUser = session.user;
+          
+          // Check if user profile exists
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", authUser.id)
+            .single();
+
+          if (!profileData) {
+            // Create new profile for Google user
+            await supabase.from("profiles").insert({
+              id: crypto.randomUUID(),
+              user_id: authUser.id,
+              email: authUser.email,
+              name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "Google User",
+              is_active: true,
+              last_login: new Date().toISOString(),
+            });
+
+            // Create default role for new user
+            await supabase.from("user_roles").insert({
+              id: crypto.randomUUID(),
+              user_id: authUser.id,
+              role: "user",
+            });
+          }
+
+          // Reload users to update local state
+          await reloadUsers();
+          
+          // Set current user
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (currentUser) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("*")
+              .eq("user_id", currentUser.id)
+              .single();
+            
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", currentUser.id)
+              .single();
+
+            if (profile) {
+              const user: AppUser = {
+                id: currentUser.id,
+                name: profile.name || currentUser.email?.split("@")[0] || "Google User",
+                email: currentUser.email || "",
+                password: "",
+                role: (roleData?.role as Role) || "user",
+                active: profile.is_active ?? true,
+                lastLoginAt: profile.last_login ? Date.parse(profile.last_login) : Date.now(),
+              };
+              setUser(user);
+              saveSession(user.id);
+            }
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          saveSession(null);
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [reloadUsers]);
+
   React.useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === SESSION_KEY) {
@@ -402,6 +551,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { ok: true, code: "ok", message: "تم تسجيل الدخول", user: u, backend };
   }, [users, supabaseDisabled]);
 
+  const loginWithGoogle = React.useCallback(async () => {
+    if (!supabase) {
+      return { ok: false, code: "supabase_not_available", message: "Google authentication is not available" };
+    }
+
+    try {
+      // Start Google OAuth flow
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) {
+        return { ok: false, code: "oauth_error", message: error.message };
+      }
+
+      // The OAuth flow will redirect the user to Google
+      // After successful authentication, the user will be redirected back
+      return { ok: true, code: "redirecting", message: "Redirecting to Google..." };
+    } catch (error) {
+      return { ok: false, code: "oauth_error", message: "Failed to start Google authentication" };
+    }
+  }, []);
+
   const logout = React.useCallback(() => {
     setUser(null);
     saveSession(null);
@@ -480,80 +655,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [users, user]);
   
-  const reloadUsers = React.useCallback(async () => {
-    const run = async () => {
-      if (supabase && !supabaseDisabled) {
-        const { data, error } = await supabase.from("profiles").select("*");
-        if (error) {
-          setSupabaseDisabled(true);
-          if (!AUTH_LOCAL_DISABLED) {
-            const local = loadUsersLocal();
-            setUsers(local);
-            const currentId = loadSession();
-            if (currentId) {
-              const u = local.find(x => x.id === currentId) || null;
-              setUser(u);
-            }
-          } else {
-            setUsers([]);
-          }
-          return;
-        }
-        const rows = Array.isArray(data) ? data : [];
-        let rolesRows: any[] = [];
-        try {
-          const { data: rolesData } = await supabase.from("user_roles").select("*");
-          rolesRows = Array.isArray(rolesData) ? rolesData : [];
-        } catch { void 0; }
-        const roleByUserId = new Map<string, string>();
-        rolesRows.forEach((r: any) => {
-          if (r && typeof r.user_id === "string" && typeof r.role === "string") {
-            roleByUserId.set(r.user_id, r.role.toLowerCase());
-          }
-        });
-        const mapped = rows.map((r: any) => {
-          const lastLoginRaw = (r.last_login as string) || "";
-          const lastLoginAt = lastLoginRaw ? Date.parse(lastLoginRaw) || 0 : 0;
-          const role = roleByUserId.get(r.user_id || r.id) || "user";
-          return {
-            id: r.user_id || r.id,
-            name: r.name || (typeof r.email === "string" ? String(r.email).split("@")[0] : "user"),
-            email: r.email || "",
-            password: "",
-            role,
-            active: !!(r.is_active ?? false),
-            lastLoginAt,
-            needsApprovalNotification: false,
-          } as AppUser;
-        });
-        setUsers(mapped);
-        setSupabaseDisabled(false);
-        const currentId = loadSession();
-        if (currentId) {
-          const u = mapped.find(x => x.id === currentId) || null;
-          setUser(u);
-        }
-      } else {
-        if (!AUTH_LOCAL_DISABLED) {
-          const local = loadUsersLocal();
-          setUsers(local);
-          const currentId = loadSession();
-          if (currentId) {
-              const u = local.find(x => x.id === currentId) || null;
-              setUser(u);
-          }
-        } else {
-          setUsers([]);
-        }
-      }
-    };
-    await run();
-  }, []);
-
   const value: AuthContextValue = {
     user,
     users,
     login,
+    loginWithGoogle,
     logout,
     addUser,
     updateUser,
