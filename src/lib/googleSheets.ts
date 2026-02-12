@@ -585,3 +585,40 @@ function calculateFillStats(frequencyStr: string, lastDateStr: string) {
     fillFrequency: frequencyStr
   };
 }
+
+/**
+ * Delete a record from the Google Sheet
+ */
+export async function deleteRecord(rowIndex: number): Promise<void> {
+  try {
+    // Get the current data to find the exact row
+    const response = await fetch(
+      `${SHEETS_API_BASE}/${SPREADSHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:Z${rowIndex}?key=${API_KEY}`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch row data for deletion');
+    }
+
+    // Clear the row by setting empty values
+    const clearResponse = await fetch(
+      `${SHEETS_API_BASE}/${SPREADSHEET_ID}/values/${SHEET_NAME}!A${rowIndex}:Z${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']]
+        }),
+      }
+    );
+
+    if (!clearResponse.ok) {
+      throw new Error('Failed to clear record from sheet');
+    }
+  } catch (error) {
+    console.error('Error deleting record:', error);
+    throw error;
+  }
+}

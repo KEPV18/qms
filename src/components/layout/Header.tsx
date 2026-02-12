@@ -1,12 +1,11 @@
-import { Search, Bell, HelpCircle, Settings, RefreshCw, Loader2, FileText, Folder, Layout, FileCode, CheckCircle, ExternalLink, Table } from "lucide-react";
+import { Search, Bell, Settings, FileText, Folder, Layout, FileCode, CheckCircle, ExternalLink, Table, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import { searchProjectDrive, DriveSearchResult } from "@/lib/driveService";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/hooks/use-toast";
+
 import { cn } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 import { SettingsModal } from "@/components/settings/SettingsModal";
@@ -14,12 +13,10 @@ import { SettingsModal } from "@/components/settings/SettingsModal";
 export function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<DriveSearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const [isSearching, setIsSearching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -63,26 +60,7 @@ export function Header() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const handleGlobalRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      // Invalidate all queries to sync everything
-      await queryClient.invalidateQueries();
-      toast({
-        title: "Synchronization Complete",
-        description: "Latest data fetched from Google Drive & Sheets.",
-        className: "bg-success text-success-foreground"
-      });
-    } catch (error) {
-      toast({
-        title: "Refresh Failed",
-        description: "Could not sync with Google services.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+
 
   const getFileTypeInfo = (file: DriveSearchResult) => {
     const name = file.name;
@@ -113,17 +91,7 @@ export function Header() {
   return (
     <header className="h-16 bg-card/80 backdrop-blur-sm border-b border-border shadow-sm flex items-center justify-between px-6 sticky top-0 z-40">
       {/* Brand Logo */}
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-          <div className="w-5 h-5 bg-white rounded-sm flex items-center justify-center">
-            <span className="text-indigo-600 font-bold text-xs">QMS</span>
-          </div>
-        </div>
-        <div>
-          <div className="text-lg font-bold text-gray-900"> QMS</div>
-          <div className="text-xs text-gray-500">Quality Management System</div>
-        </div>
-      </div>
+        
 
       {/* Search */}
       <div className="flex items-center gap-4 flex-1 max-w-xl relative" ref={dropdownRef}>
@@ -206,22 +174,6 @@ export function Header() {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn("gap-2 border-border", isRefreshing && "text-accent")}
-          onClick={handleGlobalRefresh}
-          disabled={isRefreshing}
-        >
-          {isRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          Refresh System
-        </Button>
-
-        <div className="w-px h-6 bg-border mx-2" />
-
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-          <HelpCircle className="w-5 h-5" />
-        </Button>
 
         {/* Notifications Dropdown */}
         <div className="relative" ref={notificationRef}>

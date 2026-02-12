@@ -3,6 +3,7 @@ import {
   fetchSheetData,
   fetchSheetDataWithAllFiles,
   updateSheetCell,
+  deleteRecord as deleteRecordFromSheet,
   calculateModuleStats,
   calculateAuditSummary,
   calculateReviewSummary,
@@ -95,6 +96,33 @@ export function useUpdateRecord() {
         variant: "destructive",
       });
       console.error("Update error:", error);
+    },
+  });
+}
+
+export function useDeleteRecord() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (rowIndex: number) => {
+      await deleteRecordFromSheet(rowIndex);
+      return rowIndex;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["qms-data"] });
+      toast({
+        title: "تم الحذف بنجاح",
+        description: "تم حذف السجل بنجاح",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء حذف السجل",
+        variant: "destructive",
+      });
+      console.error("Delete error:", error);
     },
   });
 }

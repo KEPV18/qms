@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { listAllArchivedFiles, restoreFileFromArchive, permanentlyDeleteDriveFile, checkAndCleanupExpiredArchives } from "@/lib/driveService";
 import type { DriveFile } from "@/lib/driveService";
 import { Button } from "@/components/ui/button";
@@ -222,6 +223,7 @@ export default function ArchivePage() {
                     </div>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }

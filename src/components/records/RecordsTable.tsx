@@ -19,6 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   AlertTriangle,
   Loader2,
   ChevronRight,
@@ -28,16 +35,18 @@ import {
   ExternalLink,
   CheckCircle,
   Clock,
-  FolderOpen
+  FolderOpen,
+  Eye
 } from "lucide-react";
 import { QMSRecord, RecordStatus } from "@/lib/googleSheets";
-import { useUpdateRecord } from "@/hooks/useQMSData";
+import { useUpdateRecord, useDeleteRecord } from "@/hooks/useQMSData";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { FormDetailsModal } from "./FormDetailsModal";
 
 interface RecordsTableProps {
   records: QMSRecord[];
@@ -59,6 +68,7 @@ function getAuditStatusBadge(status: string) {
 export function RecordsTable({ records, isLoading = false }: RecordsTableProps) {
   const navigate = useNavigate();
   const updateRecord = useUpdateRecord();
+  const deleteRecord = useDeleteRecord();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -66,8 +76,12 @@ export function RecordsTable({ records, isLoading = false }: RecordsTableProps) 
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
   const [rowFiles, setRowFiles] = useState<Record<string, any[]>>({});
   const [loadingFiles, setLoadingFiles] = useState<Record<string, boolean>>({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
   const [fileComments, setFileComments] = useState<Record<string, string>>({});
   const [editingNames, setEditingNames] = useState<Record<string, string>>({});
+  const [selectedRecord, setSelectedRecord] = useState<QMSRecord | null>(null);
+  const [showFormDetails, setShowFormDetails] = useState(false);
 
   const handleFileReview = async (record: QMSRecord, fileId: string, status: RecordStatus, reviewerName?: string) => {
     const name = reviewerName || (record as any).fileReviewedBy || record.reviewedBy || "User";
@@ -372,10 +386,13 @@ export function RecordsTable({ records, isLoading = false }: RecordsTableProps) 
                         variant="ghost"
                         size="sm"
                         className="h-8 px-2"
-                        onClick={() => window.open(record.isAtomic ? record.fileLink : record.folderLink, '_blank')}
+                        onClick={() => {
+                          setSelectedRecord(record);
+                          setShowFormDetails(true);
+                        }}
                       >
-                        View
-                        <ExternalLink className="w-3 h-3 ml-1" />
+                        <Eye className="w-3 h-3 mr-1" />
+                        Details
                       </Button>
                     </div>
                   </TableCell>
@@ -462,7 +479,18 @@ export function RecordsTable({ records, isLoading = false }: RecordsTableProps) 
                           </div>
                         )}
 
-                        <div className="flex justify-end pt-2 border-t border-border mt-4">
+                        <div className="flex justify-between pt-2 border-t border-border mt-4">
+                          <Button 
+                            size="sm" 
+                            variant="destructive" 
+                            className="rounded-md"
+                            onClick={() => {
+                              setRecordToDelete(record.id);
+                              setShowDeleteModal(true);
+                            }}
+                          >
+                            حذف السجل
+                          </Button>
                           <Button size="sm" variant="outline" className="rounded-md" onClick={() => window.open(record.folderLink, '_blank')}>
                             Open Full Folder in Drive
                           </Button>
@@ -476,6 +504,53 @@ export function RecordsTable({ records, isLoading = false }: RecordsTableProps) 
           })}
         </TableBody>
       </Table>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogDescription>
+              هل أنت متأكد من حذف هذا السجل؟ لا يمكن التراجع عن هذا الإجراء.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteModal(false);
+                setRecordToDelete(null);
+              }}
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (recordToDelete) {
+                  try {
+                    // Find the record to get its row index
+                    const record = records.find(r => r.id === recordToDelete);
+                    if (record) {
+                      await deleteRecord.mutateAsync(record.rowIndex);
+                    }
+                    setShowDeleteModal(false);
+                    setRecordToDelete(null);
+                  } catch (error) {
+                    toast({
+                      title: "خطأ في الحذف",
+                      description: "حدث خطأ أثناء حذف السجل",
+                      variant: "destructive",
+                    });
+                  }
+                }
+              }}
+            >
+              حذف
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

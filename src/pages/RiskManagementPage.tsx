@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RiskRegisterTab } from "@/components/risk/RiskRegisterTab";
@@ -70,6 +71,7 @@ export default function RiskManagementPage() {
                     </Tabs>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }

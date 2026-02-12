@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { useQMSData, useUpdateRecord } from "@/hooks/useQMSData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -391,6 +392,7 @@ export default function RecordDetail() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

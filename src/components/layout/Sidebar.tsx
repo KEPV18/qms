@@ -169,24 +169,24 @@ export function Sidebar({ activeModule, onModuleChange }: SidebarProps) {
         {isCollapsed ? <PanelLeftOpen className="w-3 h-3" /> : <PanelLeftClose className="w-3 h-3" />}
       </button>
 
-      {/* Logo */}
+      {/* Enhanced Logo */}
       <div className="p-6 border-b border-sidebar-border relative">
         <div
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer group"
           onClick={() => {
             navigate("/");
             onModuleChange("dashboard");
           }}
         >
-          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <div className="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
-              <span className="text-indigo-600 font-bold text-xs">QMS</span>
+          <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+              <span className="text-primary font-bold text-sm">QMS</span>
             </div>
           </div>
           {!isCollapsed && (
-            <div>
-              <h1 className="font-bold text-lg">QMS</h1>
-              <p className="text-xs text-sidebar-foreground/60">Quality Management System</p>
+            <div className="animate-slide-in">
+              <h1 className="font-bold text-xl bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">QMS</h1>
+              <p className="text-sm text-sidebar-foreground/70 font-medium">Quality Management System</p>
             </div>
           )}
         </div>

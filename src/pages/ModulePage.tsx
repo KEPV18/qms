@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { useQMSData } from "@/hooks/useQMSData";
 import { RecordsTable } from "@/components/records/RecordsTable";
 import { RecordBrowser } from "@/components/records/RecordBrowser";
@@ -472,6 +473,7 @@ export default function ModulePage() {
           />
         )}
       </main>
+      <Footer />
     </div>
   );
 }

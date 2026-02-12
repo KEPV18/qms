@@ -58,31 +58,36 @@ export function StatusCard({
 
   return (
     <div className={cn(
-      "rounded-lg border p-5 transition-all duration-200",
+      "rounded-xl border p-6 transition-all duration-300 hover:shadow-md hover:border-primary/30 group-hover:scale-105",
       variantStyles[variant]
     )}>
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">{title}</p>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-muted-foreground tracking-wide">{title}</p>
+          <p className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            {typeof value === 'number' ? value.toLocaleString() : value}
+          </p>
           {subtitle && (
-            <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
+            <p className="text-sm text-muted-foreground/80 font-medium">{subtitle}</p>
           )}
           {trend && (
             <div className={cn(
-              "flex items-center gap-1 mt-2 text-sm",
+              "flex items-center gap-2 mt-3 text-sm font-semibold",
               trend.isPositive ? "text-success" : "text-destructive"
             )}>
-              <span>{trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%</span>
-              <span className="text-muted-foreground">vs last month</span>
+              <span className="flex items-center gap-1">
+                <span className="text-lg">{trend.isPositive ? "↗" : "↘"}</span>
+                {Math.abs(trend.value)}%
+              </span>
+              <span className="text-muted-foreground/70 text-xs font-normal">vs last month</span>
             </div>
           )}
         </div>
         <div className={cn(
-          "w-10 h-10 rounded-lg flex items-center justify-center",
+          "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3",
           iconStyles[variant]
         )}>
-          <Icon className="w-5 h-5" />
+          <Icon className="w-6 h-6" />
         </div>
       </div>
     </div>
