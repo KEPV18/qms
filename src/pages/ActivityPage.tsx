@@ -1,0 +1,244 @@
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
+import { useQMSData } from "@/hooks/useQMSData";
+import { QMSRecord, formatTimeAgo, getModuleForCategory } from "@/lib/googleSheets";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  FileText, CheckCircle, AlertTriangle, Clock, User, ExternalLink,
+  ArrowLeft, Activity, Inbox,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+function getActivityType(record: QMSRecord): "new" | "approved" | "pending" | "issue" | "empty" {
+  const reviews = record.fileReviews || {};
+  const reviewValues = Object.values(reviews) as Array<{ status?: string }>;
+  const statuses = reviewValues.map(r => (r?.status || "").toLowerCase());
+  const approvedCount = statuses.filter(s => s === "approved" || s === "✅" || s.includes("approved")).length;
+  const rejectedCount = statuses.filter(s => s === "rejected" || s.includes("invalid") || s === "❌").length;
+  const hasPending = reviewValues.length > 0 && statuses.some(s => s === "" || s === "pending" || s === "pending_review" || s.includes("under"));
+  const auditStatus = (record.auditStatus || "").toLowerCase();
+
+  // Only flag as issue if audit status explicitly says NC/issue, or rejected outnumber approved
+  if (auditStatus.includes("nc") || auditStatus.includes("issue")) return "issue";
+  if (rejectedCount > 0 && rejectedCount >= approvedCount) return "issue";
+  
+  if (record.reviewed || approvedCount > 0) return "approved";
+
+  const hasFiles = (record.actualRecordCount || 0) > 0 || (record.lastSerial && record.lastSerial !== "No Files Yet");
+  if (!hasFiles) return "empty";
+  if (hasPending || reviewValues.length === 0) return "pending";
+  return "new";
+}
+
+const typeConfig: Record<string, { icon: typeof FileText; color: string; bg: string; label: string }> = {
+  new:      { icon: FileText,       color: "text-info",        bg: "bg-info/10",        label: "New" },
+  approved: { icon: CheckCircle,    color: "text-success",     bg: "bg-success/10",     label: "Approved" },
+  pending:  { icon: Clock,          color: "text-warning",     bg: "bg-warning/10",     label: "Pending" },
+  issue:    { icon: AlertTriangle,  color: "text-destructive", bg: "bg-destructive/10", label: "Issue" },
+  empty:    { icon: Inbox,          color: "text-muted-foreground", bg: "bg-muted/30",  label: "No Files" },
+};
+
+type FilterType = "all" | "new" | "approved" | "pending" | "issue" | "empty";
+
+export default function ActivityPage() {
+  const navigate = useNavigate();
+  const [activeModule, setActiveModule] = useState("activity");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(localStorage.getItem('sidebarCollapsed') === 'true');
+  const [filter, setFilter] = useState<FilterType>("all");
+
+  useEffect(() => {
+    const handleToggle = (event: Event) => {
+      setSidebarCollapsed((event as CustomEvent<boolean>).detail);
+    };
+    window.addEventListener('qms-sidebar-toggle', handleToggle as EventListener);
+    return () => window.removeEventListener('qms-sidebar-toggle', handleToggle as EventListener);
+  }, []);
+
+  const { data: records, isLoading } = useQMSData();
+
+  // Sort all records by last file date, most recent first
+  const allActivity = useMemo(() => {
+    if (!records) return [];
+    return [...records].sort((a, b) => {
+      const dA = a.lastFileDate ? new Date(a.lastFileDate).getTime() : 0;
+      const dB = b.lastFileDate ? new Date(b.lastFileDate).getTime() : 0;
+      return dB - dA;
+    });
+  }, [records]);
+
+  // Count per type
+  const counts = useMemo(() => {
+    const c: Record<FilterType, number> = { all: allActivity.length, new: 0, approved: 0, pending: 0, issue: 0, empty: 0 };
+    allActivity.forEach(r => { c[getActivityType(r)]++; });
+    return c;
+  }, [allActivity]);
+
+  // Only show filters that have items
+  const visibleFilters: FilterType[] = useMemo(() => {
+    const available: FilterType[] = ["all"];
+    (["issue", "pending", "approved", "new", "empty"] as FilterType[]).forEach(f => {
+      if (counts[f] > 0) available.push(f);
+    });
+    return available;
+  }, [counts]);
+
+  // Reset filter if it becomes empty
+  useEffect(() => {
+    if (filter !== "all" && counts[filter] === 0) setFilter("all");
+  }, [counts, filter]);
+
+  const filteredActivity = filter === "all"
+    ? allActivity
+    : allActivity.filter(r => getActivityType(r) === filter);
+
+  return (
+    <div className="flex min-h-screen w-full bg-background">
+      <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+
+      <div className={cn(
+        "flex-1 flex flex-col transition-all duration-300 ml-0",
+        sidebarCollapsed ? "md:ml-[60px]" : "md:ml-60"
+      )}>
+        <Header />
+
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-[1000px] mx-auto p-6 md:p-8 space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/")}>
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground tracking-tight">Recent Activity</h1>
+                  <p className="text-xs text-muted-foreground">
+                    {allActivity.length} records across all modules
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter tabs — only show those with data */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {visibleFilters.map(f => {
+                const config = f === "all" ? null : typeConfig[f];
+                const isActive = filter === f;
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border flex items-center gap-1.5",
+                      isActive
+                        ? f === "all"
+                          ? "bg-primary/10 text-primary border-primary/20"
+                          : cn(config?.bg, config?.color, config?.bg.replace("/10", "/20").replace("bg-", "border-"))
+                        : "bg-muted/30 text-muted-foreground border-border/50 hover:bg-muted/50"
+                    )}
+                  >
+                    {f === "all" ? "All" : config?.label}
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full", isActive ? "bg-background/50" : "bg-muted/50")}>
+                      {counts[f]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Activity list */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              {isLoading ? (
+                <div className="divide-y divide-border">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="p-4 flex gap-3">
+                      <Skeleton className="w-9 h-9 rounded-lg" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredActivity.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Inbox className="w-8 h-8 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-muted-foreground">No activity yet</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">Records will appear here once data is synced</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border/50">
+                  {filteredActivity.map((record, i) => {
+                    const type = getActivityType(record);
+                    const config = typeConfig[type];
+                    const Icon = config.icon;
+                    const module = getModuleForCategory(record.category);
+
+                    return (
+                      <div
+                        key={`${record.code}-${i}`}
+                        className="px-5 py-4 hover:bg-muted/30 transition-colors cursor-pointer group"
+                        onClick={() => navigate(`/record/${encodeURIComponent(record.code)}`)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0", config.bg)}>
+                            <Icon className={cn("w-4 h-4", config.color)} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold text-foreground truncate">{record.recordName}</span>
+                              <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded", config.bg, config.color)}>{config.label}</span>
+                              {module && (
+                                <span className="text-[9px] font-medium text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded capitalize">{module}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                              <span className="font-mono text-[10px]">{record.code}</span>
+                              {record.lastFileDate && (
+                                <>
+                                  <span>·</span>
+                                  <span>{formatTimeAgo(record.lastFileDate)}</span>
+                                </>
+                              )}
+                              {record.reviewedBy && (
+                                <>
+                                  <span>·</span>
+                                  <span className="flex items-center gap-0.5"><User className="w-3 h-3" />{record.reviewedBy}</span>
+                                </>
+                              )}
+                              {(record.actualRecordCount ?? 0) > 0 && (
+                                <>
+                                  <span>·</span>
+                                  <span>{record.actualRecordCount} files</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {record.folderLink && (
+                              <a href={record.folderLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                                className="text-muted-foreground/50 hover:text-primary p-1">
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </div>
+  );
+}
