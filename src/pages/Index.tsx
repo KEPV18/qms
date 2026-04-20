@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ModuleCard } from "@/components/dashboard/ModuleCard";
-import { StatusCard } from "@/components/dashboard/StatusCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { AuditReadiness } from "@/components/dashboard/AuditReadiness";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -19,7 +18,7 @@ import {
 import { MODULE_CONFIG } from "@/config/modules";
 import {
   FileText, AlertTriangle, Clock, CheckCircle,
-  TrendingUp, TrendingDown, BarChart3, Zap,
+  TrendingUp, TrendingDown, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,19 +26,25 @@ import { Button } from "@/components/ui/button";
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { data: records, isLoading, error } = useQMSData();
-  const { data: moduleStats } = useModuleStats();
-  const { data: auditSummary } = useAuditSummary();
-  const { data: reviewSummary } = useReviewSummary();
-  const { data: monthlyComparison } = useMonthlyComparison();
-  const { recentActivity } = useRecentActivity();
 
-  const stats = useMemo(() => ({
-    evidence: moduleStats?.totalEvidence ?? 0,
-    approved: moduleStats?.approved ?? 0,
-    pending: moduleStats?.pendingReview ?? 0,
-    gaps: moduleStats?.gaps?.total ?? 0,
-    rejected: moduleStats?.rejected ?? 0,
-  }), [moduleStats]);
+  // These hooks take records as input (useMemo-based, not React Query)
+  const moduleStats = useModuleStats(records);
+  const auditSummary = useAuditSummary(records);
+  const reviewSummary = useReviewSummary(records);
+  const monthlyComparison = useMonthlyComparison(records);
+  const recentActivity = useRecentActivity(records, 5);
+
+  const stats = useMemo(() => {
+    const totalEvidence = records?.reduce((sum, r) => sum + (r.actualRecordCount || 0), 0) || 0;
+    const gapsCount = records?.filter(r => (r.actualRecordCount || 0) === 0).length || 0;
+    return {
+      evidence: totalEvidence,
+      approved: auditSummary.compliant,
+      pending: auditSummary.pending,
+      rejected: auditSummary.issues,
+      gaps: gapsCount,
+    };
+  }, [records, auditSummary]);
 
   if (isLoading) return <StateScreen state="loading" title="Loading dashboard…" />;
   if (error) return <StateScreen state="error" title="Failed to load data" message={error.message} action={{ label: "Retry", onClick: () => window.location.reload() }} />;
@@ -85,17 +90,23 @@ export default function DashboardPage() {
         <div className="space-y-3">
           <SectionHeader title="QMS Modules" description="Quality management modules" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Object.values(MODULE_CONFIG).map(mod => {
-              const modStats = moduleStats?.[mod.id] ?? { formsCount: 0, recordsCount: 0, pendingCount: 0, issuesCount: 0 };
+            {moduleStats.map(mod => {
+              const config = MODULE_CONFIG[mod.id];
+              const Icon = config?.icon || FileText;
               return (
                 <ModuleCard
                   key={mod.id}
-                  title={mod.name}
-                  description={mod.description}
-                  icon={mod.icon}
-                  moduleClass={mod.moduleClass}
-                  isoClause={mod.isoClause}
-                  stats={modStats}
+                  title={config?.name || mod.name}
+                  description={config?.description || "QMS module."}
+                  icon={Icon}
+                  moduleClass={config?.moduleClass}
+                  isoClause={config?.isoClause}
+                  stats={{
+                    formsCount: mod.formsCount,
+                    recordsCount: mod.recordsCount,
+                    pendingCount: mod.pendingCount,
+                    issuesCount: mod.issuesCount,
+                  }}
                   onClick={() => navigate(`/module/${mod.id}`)}
                 />
               );
@@ -106,48 +117,40 @@ export default function DashboardPage() {
         {/* Middle row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <QuickActions />
-          <AuditReadiness />
+          <AuditReadiness
+            moduleStats={moduleStats}
+            complianceRate={auditSummary.complianceRate}
+            isLoading={isLoading}
+            emptyFormsCount={stats.gaps}
+          />
         </div>
 
         {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <RecentActivity recentActivity={recentActivity} />
-          <PendingActions />
+          <RecentActivity records={recentActivity || []} isLoading={isLoading} />
+          <PendingActions records={records || []} isLoading={isLoading} />
         </div>
 
         {/* Comparison */}
-        {monthlyComparison && (
+        {monthlyComparison && monthlyComparison.currentMonth > 0 && (
           <div className="space-y-3">
             <SectionHeader title="Monthly Comparison" description="Current vs previous period" />
-            <div className="bg-card border border-border rounded-sm p-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-card border border-border rounded-sm p-5 grid grid-cols-2 md:grid-cols-2 gap-4">
               <div className="text-center">
-                <p className="text-2xl font-black text-success">{monthlyComparison.currentMonth?.approved ?? 0}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Approved</p>
-                {monthlyComparison.currentMonth?.approved !== undefined && monthlyComparison.previousMonth?.approved !== undefined && (
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    {monthlyComparison.currentMonth.approved >= monthlyComparison.previousMonth.approved
-                      ? <TrendingUp className="w-3 h-3 text-success" />
-                      : <TrendingDown className="w-3 h-3 text-destructive" />}
-                    <span className="text-[10px] font-mono text-muted-foreground">
-                      {monthlyComparison.currentMonth.approved >= monthlyComparison.previousMonth.approved ? "+" : ""}
-                      {monthlyComparison.previousMonth.approved > 0
-                        ? Math.round(((monthlyComparison.currentMonth.approved - monthlyComparison.previousMonth.approved) / monthlyComparison.previousMonth.approved) * 100)
-                        : 0}%
-                    </span>
-                  </div>
-                )}
+                <p className="text-2xl font-black text-success">{monthlyComparison.currentMonth}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Current Period</p>
+                <div className="flex items-center justify-center gap-1 mt-1">
+                  {monthlyComparison.isPositive
+                    ? <TrendingUp className="w-3 h-3 text-success" />
+                    : <TrendingDown className="w-3 h-3 text-destructive" />}
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {monthlyComparison.isPositive ? "+" : ""}{monthlyComparison.percentageChange}%
+                  </span>
+                </div>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-warning">{monthlyComparison.currentMonth?.pending ?? 0}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Pending</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-black text-destructive">{monthlyComparison.currentMonth?.rejected ?? 0}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Rejected</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-black text-foreground">{monthlyComparison.currentMonth?.total ?? 0}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Total</p>
+                <p className="text-2xl font-black text-muted-foreground">{monthlyComparison.previousMonth}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">Previous Period</p>
               </div>
             </div>
           </div>
