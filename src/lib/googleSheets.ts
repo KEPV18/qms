@@ -430,7 +430,7 @@ export function calculateModuleStats(records: QMSRecord[]): ModuleStats[] {
     const files = record.files || [];
     const reviews = record.fileReviews || {};
 
-    stats.recordsCount += files.length;
+    stats.recordsCount += files.length || record.actualRecordCount || 0;
 
     // Count pending files atomically
     files.forEach(file => {

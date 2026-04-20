@@ -35,16 +35,16 @@ export default function DashboardPage() {
   const recentActivity = useRecentActivity(records, 5);
 
   const stats = useMemo(() => {
-    const totalEvidence = records?.reduce((sum, r) => sum + (r.actualRecordCount || 0), 0) || 0;
+    const totalEvidence = reviewSummary.completed + reviewSummary.pending + reviewSummary.rejected;
     const gapsCount = records?.filter(r => (r.actualRecordCount || 0) === 0).length || 0;
     return {
       evidence: totalEvidence,
-      approved: auditSummary.compliant,
-      pending: auditSummary.pending,
-      rejected: auditSummary.issues,
+      approved: reviewSummary.completed,
+      pending: reviewSummary.pending,
+      rejected: reviewSummary.rejected,
       gaps: gapsCount,
     };
-  }, [records, auditSummary]);
+  }, [records, reviewSummary]);
 
   if (isLoading) return <StateScreen state="loading" title="Loading dashboard…" />;
   if (error) return <StateScreen state="error" title="Failed to load data" message={error.message} action={{ label: "Retry", onClick: () => window.location.reload() }} />;
