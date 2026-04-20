@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Activity,
   Archive,
+  Layers,
 } from "lucide-react";
 import type { RecordStatus } from "@/lib/googleSheets";
 
@@ -131,10 +132,16 @@ export const MODULE_NAV_ITEMS: NavItem[] = Object.values(MODULE_CONFIG).map(
 MODULE_NAV_ITEMS[0].label = "Sales & Customer";
 MODULE_NAV_ITEMS[2].label = "Quality & Audit";
 
-/** Tool/navigation items — used by TopNav and Sidebar */
-export const TOOL_NAV_ITEMS: NavItem[] = [
+/** Documentation/reference items — read-only resources */
+export const DOCS_NAV_ITEMS: NavItem[] = [
   { id: "iso-manual", label: "ISO 9001 Manual", icon: FileCheck, path: "/iso-manual" },
   { id: "procedures", label: "Procedures", icon: BookOpen, path: "/procedures" },
+  { id: "forms", label: "Forms Registry", icon: Layers, path: "/forms" },
+];
+
+/** Tool/navigation items — interactive tools */
+export const TOOL_NAV_ITEMS: NavItem[] = [
+  { id: "forms", label: "Forms Registry", icon: Layers, path: "/forms" },
   { id: "risk", label: "Risk & Process", icon: AlertTriangle, path: "/risk-management" },
   { id: "activity", label: "Activity Log", icon: Activity, path: "/activity" },
   { id: "archive", label: "Record Archive", icon: Archive, path: "/archive" },
