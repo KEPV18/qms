@@ -26,6 +26,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AddRecordModal } from "@/components/records/AddRecordModal";
 import { AddFormModal } from "@/components/records/AddFormModal";
 import { EditFrequencyModal } from "@/components/records/EditFrequencyModal";
+import { StateScreen } from "@/components/ui/StateScreen";
 import { QMSRecord, formatTimeAgo } from "@/lib/googleSheets";
 import type { DriveFile } from "@/lib/driveService";
 import { MODULE_CONFIG } from "@/config/modules";

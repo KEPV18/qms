@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { DecisionBanner } from "@/components/ui/DecisionBanner";
+import { StateScreen } from "@/components/ui/StateScreen";
 
 import { RecordHeader } from "@/components/record-detail/RecordHeader";
 import { FileStats } from "@/components/record-detail/FileStats";

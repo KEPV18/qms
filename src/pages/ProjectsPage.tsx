@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DecisionBanner } from "@/components/ui/DecisionBanner";
 
 export default function ProjectsPage() {
   const navigate = useNavigate();

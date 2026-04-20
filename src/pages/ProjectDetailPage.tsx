@@ -21,6 +21,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RecordsTable } from "@/components/records/RecordsTable";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DecisionBanner } from "@/components/ui/DecisionBanner";
+import { StatsRow } from "@/components/ui/StatsRow";
 
 export default function ProjectDetailPage() {
   const { projectName } = useParams<{ projectName: string }>();
