@@ -34,9 +34,9 @@ export function ModuleCard({
   stats, isLoading = false, onClick,
 }: ModuleCardProps) {
   const s = moduleStyles(moduleClass);
-  const total = stats.formsCount + stats.recordsCount;
-  const issues = stats.pendingCount + stats.issuesCount;
-  const complianceRate = total > 0 ? Math.round(((total - issues) / total) * 100) : 100;
+  const totalRecords = stats.recordsCount;
+  const approvedRecords = totalRecords - stats.pendingCount - stats.issuesCount;
+  const complianceRate = totalRecords > 0 ? Math.max(0, Math.round((approvedRecords / totalRecords) * 100)) : 100;
 
   if (isLoading) {
     return (

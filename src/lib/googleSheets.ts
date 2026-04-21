@@ -407,6 +407,7 @@ export async function batchUpdateReviewedBy(
 
 export function calculateModuleStats(records: QMSRecord[]): ModuleStats[] {
   const moduleMap = new Map<string, ModuleStats>();
+  const metaKeys = new Set(['recordstatus', 'lastupdated', 'lastauditdate', 'auditissues']);
 
   for (const record of records) {
     const normalized = normalizeCategory(record.category);
@@ -428,22 +429,50 @@ export function calculateModuleStats(records: QMSRecord[]): ModuleStats[] {
     stats.formsCount++; // Increment template count
 
     const files = record.files || [];
-    const reviews = record.fileReviews || {};
+    const reviews = (record.fileReviews || {}) as Record<string, FileReview>;
+    const recordLevelStatus = ((reviews as Record<string, unknown>)?.recordStatus as string || record.auditStatus || 'pending').toLowerCase();
 
-    stats.recordsCount += files.length || record.actualRecordCount || 0;
-
-    // Count pending files atomically
-    files.forEach(file => {
-      const review = reviews[file.id] || { status: 'pending_review' };
-      if (review.status !== 'approved' && review.status !== 'rejected') {
-        stats.pendingCount++;
+    if (files.length > 0) {
+      // Drive files available — count records and status from each file's review
+      stats.recordsCount += files.length;
+      files.forEach(file => {
+        const review = reviews[file.id];
+        const status = (review?.status || recordLevelStatus).toLowerCase();
+        if (status === 'approved') {
+          // approved — not pending, not issue
+        } else if (status === 'rejected') {
+          stats.issuesCount++;
+        } else {
+          stats.pendingCount++;
+        }
+      });
+    } else if (Object.keys(reviews).length > 0) {
+      // No Drive files but we have review data from Column P — count from individual file reviews
+      let reviewFileCount = 0;
+      for (const [fileId, reviewData] of Object.entries(reviews)) {
+        if (metaKeys.has(fileId.toLowerCase())) continue;
+        reviewFileCount++;
+        const review = reviewData as FileReview;
+        const status = (review?.status || recordLevelStatus).toLowerCase();
+        if (status === 'approved') {
+          // approved
+        } else if (status === 'rejected') {
+          stats.issuesCount++;
+        } else {
+          stats.pendingCount++;
+        }
       }
-    });
-
-    // Template-level issue check
-    const auditStatus = normalizeAuditStatus(record.auditStatus);
-    if (auditStatus === "issue") {
-      stats.issuesCount++;
+      stats.recordsCount += reviewFileCount || record.actualRecordCount || 0;
+    } else {
+      // No files and no reviews — use record-level status
+      stats.recordsCount += record.actualRecordCount || 0;
+      if (recordLevelStatus === 'approved') {
+        // approved
+      } else if (recordLevelStatus === 'rejected') {
+        stats.issuesCount += record.actualRecordCount || 1;
+      } else {
+        stats.pendingCount += record.actualRecordCount || 1;
+      }
     }
 
     // Readiness check: Does the template have at least one record filled?
@@ -469,6 +498,7 @@ export function calculateAuditSummary(records: QMSRecord[]): AuditSummary {
     const files = record.files || [];
     const reviews = (record.fileReviews || {}) as Record<string, FileReview>;
     const recordStatus = ((reviews as Record<string, unknown>)?.recordStatus as string || record.auditStatus || 'pending').toLowerCase();
+    const metaKeys = new Set(['recordstatus', 'lastupdated', 'lastauditdate', 'auditissues']);
 
     if (files.length > 0) {
       files.forEach(file => {
@@ -477,28 +507,24 @@ export function calculateAuditSummary(records: QMSRecord[]): AuditSummary {
         if (status === 'approved') {
           approvedCount++;
         } else if (status === 'rejected') {
-          // Counted as issues at file level if needed, but AuditSummary tracks template issues
+          issues++;
         } else {
           pendingCount++;
         }
       });
     } else if (Object.keys(reviews).length > 0) {
-      const metaKeys = new Set(['recordstatus', 'lastupdated', 'lastauditdate', 'auditissues']);
-      for (const [fileId, review] of Object.entries(reviews)) {
+      // No Drive files but we have review data — count from individual file reviews
+      for (const [fileId, reviewData] of Object.entries(reviews)) {
         if (metaKeys.has(fileId.toLowerCase())) continue;
-        const status = ((review as FileReview).status || recordStatus).toLowerCase();
+        const status = ((reviewData as FileReview).status || recordStatus).toLowerCase();
         if (status === 'approved') {
           approvedCount++;
         } else if (status === 'rejected') {
-          // issues at template level tracked separately
+          issues++;
         } else {
           pendingCount++;
         }
       }
-    }
-
-    if (normalizeAuditStatus(record.auditStatus) === "issue") {
-      issues++;
     }
   }
 
@@ -540,8 +566,8 @@ export function calculateReviewSummary(records: QMSRecord[]): ReviewSummary {
         }
       });
     } else if (Object.keys(reviews).length > 0) {
-      // No Drive files attached, but we have review data from Column P — count from there
-      // Skip meta-keys like 'recordStatus', 'lastUpdated' etc.
+      // No Drive files attached, but we have review data from Column P — count individual file reviews
+      // Skip metadata keys like 'recordStatus', 'lastUpdated' etc.
       const metaKeys = new Set(['recordstatus', 'lastupdated', 'lastauditdate', 'auditissues']);
       for (const [fileId, review] of Object.entries(reviews)) {
         if (metaKeys.has(fileId.toLowerCase())) continue;
