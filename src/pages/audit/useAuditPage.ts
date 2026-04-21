@@ -253,35 +253,87 @@ export function useAuditPage() {
     const compliant: QMSRecord[] = [];
     const issuesList: QMSRecord[] = [];
 
+    const metaKeys = new Set(['recordstatus', 'lastupdated', 'lastauditdate', 'auditissues']);
+
     records.forEach(record => {
       const files = record.files || [];
       const reviews = record.fileReviews || {};
 
-      files.forEach(file => {
-        const review = reviews[file.id] || { status: 'pending_review', comment: '' };
-        const effectiveStatus: string = review.status;
+      if (files.length > 0) {
+        // Drive files available — process each file
+        files.forEach(file => {
+          const review = reviews[file.id] || { status: 'pending_review', comment: '' };
+          const effectiveStatus: string = review.status;
 
+          const auditItem: QMSRecord = {
+            ...record, fileId: file.id, fileName: file.name, fileLink: file.webViewLink,
+            fileStatus: effectiveStatus,
+            fileComment: review.comment || (record.fileReviews?.recordStatus === 'rejected' ? "Automated Audit detected issues in this form." : ""),
+            fileReviewedBy: review.reviewedBy || record.reviewedBy || "",
+            fileTargetYear: review.targetYear ? review.targetYear.toString() : "2026",
+            fileProject: review.project || "General", isAtomic: true,
+          };
+
+          const normalizedProject = (auditItem.fileProject === "General / All Company") ? "General" : auditItem.fileProject;
+          const matchesProject = projectFilter === "all" || normalizedProject === projectFilter;
+          const matchesYear = yearFilter === "all" || auditItem.fileTargetYear === yearFilter;
+          const itemReviewDate = auditItem.reviewDate || review.reviewDate || "";
+          const matchesDate = !dateFilter || itemReviewDate.startsWith(dateFilter) || itemReviewDate.includes(dateFilter);
+
+          if (!matchesSearch(auditItem) || !matchesCategory(auditItem) || !matchesProject || !matchesYear || !matchesDate) return;
+
+          if (effectiveStatus === 'approved') compliant.push(auditItem);
+          else if (effectiveStatus === 'rejected') issuesList.push(auditItem);
+          else pending.push(auditItem);
+        });
+      } else if (Object.keys(reviews).length > 0) {
+        // No Drive files attached, but we have review data from Column P — count from there
+        const recordLevelStatus = ((reviews as Record<string, unknown>)?.recordStatus as string || record.auditStatus || 'pending').toLowerCase();
+
+        for (const [fileId, reviewData] of Object.entries(reviews)) {
+          // Skip metadata keys like recordStatus, lastUpdated, etc.
+          if (metaKeys.has(fileId.toLowerCase())) continue;
+
+          const review = reviewData as { status?: string; comment?: string; reviewedBy?: string; targetYear?: string | number; project?: string };
+          const effectiveStatus = (review?.status || recordLevelStatus).toLowerCase();
+
+          const auditItem: QMSRecord = {
+            ...record, fileId, fileName: record.recordName, fileLink: record.templateLink,
+            fileStatus: effectiveStatus,
+            fileComment: review?.comment || (recordLevelStatus === 'rejected' ? "Automated Audit detected issues in this form." : ""),
+            fileReviewedBy: review?.reviewedBy || record.reviewedBy || "",
+            fileTargetYear: review?.targetYear ? review.targetYear.toString() : "2026",
+            fileProject: review?.project || "General", isAtomic: true,
+          };
+
+          const normalizedProject = (auditItem.fileProject === "General / All Company") ? "General" : auditItem.fileProject;
+          const matchesProject = projectFilter === "all" || normalizedProject === projectFilter;
+          const matchesYear = yearFilter === "all" || auditItem.fileTargetYear === yearFilter;
+          const itemReviewDate = auditItem.reviewDate || "";
+          const matchesDate = !dateFilter || itemReviewDate.startsWith(dateFilter) || itemReviewDate.includes(dateFilter);
+
+          if (!matchesSearch(auditItem) || !matchesCategory(auditItem) || !matchesProject || !matchesYear || !matchesDate) return;
+
+          if (effectiveStatus === 'approved') compliant.push(auditItem);
+          else if (effectiveStatus === 'rejected') issuesList.push(auditItem);
+          else pending.push(auditItem);
+        }
+      } else {
+        // No files and no reviews — count record by its status
+        const recordStatus = (record.auditStatus || 'pending').toLowerCase();
         const auditItem: QMSRecord = {
-          ...record, fileId: file.id, fileName: file.name, fileLink: file.webViewLink,
-          fileStatus: effectiveStatus,
-          fileComment: review.comment || (record.fileReviews?.recordStatus === 'rejected' ? "Automated Audit detected issues in this form." : ""),
-          fileReviewedBy: review.reviewedBy || record.reviewedBy || "",
-          fileTargetYear: review.targetYear ? review.targetYear.toString() : "2026",
-          fileProject: review.project || "General", isAtomic: true,
+          ...record, fileId: '', fileName: record.recordName, fileLink: record.templateLink,
+          fileStatus: recordStatus, fileComment: "",
+          fileReviewedBy: record.reviewedBy || "", fileTargetYear: "2026",
+          fileProject: "General", isAtomic: true,
         };
 
-        const normalizedProject = (auditItem.fileProject === "General / All Company") ? "General" : auditItem.fileProject;
-        const matchesProject = projectFilter === "all" || normalizedProject === projectFilter;
-        const matchesYear = yearFilter === "all" || auditItem.fileTargetYear === yearFilter;
-        const itemReviewDate = auditItem.reviewDate || review.reviewDate || "";
-        const matchesDate = !dateFilter || itemReviewDate.startsWith(dateFilter) || itemReviewDate.includes(dateFilter);
+        if (!matchesSearch(auditItem) || !matchesCategory(auditItem)) return;
 
-        if (!matchesSearch(auditItem) || !matchesCategory(auditItem) || !matchesProject || !matchesYear || !matchesDate) return;
-
-        if (effectiveStatus === 'approved') compliant.push(auditItem);
-        else if (effectiveStatus === 'rejected') issuesList.push(auditItem);
+        if (recordStatus === 'approved') compliant.push(auditItem);
+        else if (recordStatus === 'rejected') issuesList.push(auditItem);
         else pending.push(auditItem);
-      });
+      }
     });
 
     const overdue: QMSRecord[] = [];
@@ -319,16 +371,33 @@ export function useAuditPage() {
       const entry = catMap.get(cat)!;
       const files = record.files || [];
       const reviews = record.fileReviews || {};
-      const recordLevelStatus = reviews?.recordStatus;
+      const recordLevelStatus = ((reviews as Record<string, unknown>)?.recordStatus as string || record.auditStatus || 'pending').toLowerCase();
 
-      files.forEach(file => {
-        const review = reviews[file.id] || { status: 'pending_review' };
-        let effectiveStatus = review.status;
-        if (recordLevelStatus === 'rejected' && review.status === 'pending_review') effectiveStatus = 'rejected';
-        if (effectiveStatus === 'approved') entry.compliant++;
-        else if (effectiveStatus === 'rejected') entry.issues++;
+      if (files.length > 0) {
+        files.forEach(file => {
+          const review = reviews[file.id] || { status: 'pending_review' };
+          let effectiveStatus = (review.status || recordLevelStatus).toLowerCase();
+          if (recordLevelStatus === 'rejected' && review.status === 'pending_review') effectiveStatus = 'rejected';
+          if (effectiveStatus === 'approved') entry.compliant++;
+          else if (effectiveStatus === 'rejected') entry.issues++;
+          else entry.pending++;
+        });
+      } else if (Object.keys(reviews).length > 0) {
+        // No Drive files but we have review data from Column P
+        for (const [fileId, reviewData] of Object.entries(reviews)) {
+          if (metaKeys.has(fileId.toLowerCase())) continue;
+          const review = reviewData as { status?: string };
+          const effectiveStatus = (review?.status || recordLevelStatus).toLowerCase();
+          if (effectiveStatus === 'approved') entry.compliant++;
+          else if (effectiveStatus === 'rejected') entry.issues++;
+          else entry.pending++;
+        }
+      } else {
+        // No files and no reviews — use record-level status
+        if (recordLevelStatus === 'approved') entry.compliant++;
+        else if (recordLevelStatus === 'rejected') entry.issues++;
         else entry.pending++;
-      });
+      }
     });
     const breakdown: CategoryBreakdown[] = Array.from(catMap.entries())
       .map(([category, data]) => ({ category: category.length > 12 ? category.slice(0, 12) + "…" : category, ...data }))
