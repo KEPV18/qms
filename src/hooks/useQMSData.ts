@@ -10,11 +10,14 @@ import {
   calculateReviewSummary,
   calculateMonthlyComparison,
   getRecentActivity,
+  resolveFileStatuses,
+  getFileStatusCounts,
   QMSRecord,
   ModuleStats,
   AuditSummary,
   ReviewSummary,
   MonthlyComparison,
+  ResolvedFile,
 } from "@/lib/googleSheets";
 import { toast } from "sonner";
 
@@ -161,4 +164,63 @@ export function useDeleteRecord() {
       console.error("Delete error:", error);
     },
   });
+}
+
+// ── File Status Tracking ─────────────────────────────────────────────────────
+// Unified tracker: resolves every file across all records with its status.
+// Use this as the source of truth for counts and per-file tracking.
+
+export interface FileTrackerResult {
+  files: ResolvedFile[];
+  counts: {
+    approved: number;
+    pending: number;
+    rejected: number;
+    draft: number;
+    total: number;
+  };
+  /** Files grouped by module id */
+  byModule: Record<string, ResolvedFile[]>;
+  /** Files grouped by status */
+  byStatus: Record<string, ResolvedFile[]>;
+  /** Per-record breakdown: record code → resolved files */
+  byRecord: Record<string, ResolvedFile[]>;
+  /** How many files came from Drive vs fileReviews */
+  sources: { drive: number; reviews: number };
+}
+
+export function useFileTracker(records: QMSRecord[] | undefined): FileTrackerResult {
+  return useMemo(() => {
+    const empty: FileTrackerResult = {
+      files: [],
+      counts: { approved: 0, pending: 0, rejected: 0, draft: 0, total: 0 },
+      byModule: {},
+      byStatus: {},
+      byRecord: {},
+      sources: { drive: 0, reviews: 0 },
+    };
+
+    if (!records) return empty;
+
+    const files = resolveFileStatuses(records);
+    const counts = getFileStatusCounts(files);
+
+    const byModule: Record<string, ResolvedFile[]> = {};
+    const byStatus: Record<string, ResolvedFile[]> = {};
+    const byRecord: Record<string, ResolvedFile[]> = {};
+    let drive = 0, reviews = 0;
+
+    for (const f of files) {
+      // Group by module
+      (byModule[f.recordCategory] ??= []).push(f);
+      // Group by status
+      (byStatus[f.status] ??= []).push(f);
+      // Group by record code
+      (byRecord[f.recordCode] ??= []).push(f);
+      // Count sources
+      if (f.source === 'drive') drive++; else reviews++;
+    }
+
+    return { files, counts, byModule, byStatus, byRecord, sources: { drive, reviews } };
+  }, [records]);
 }
