@@ -5,7 +5,7 @@ import {
   FileText, Folder, ChevronLeft, ChevronRight, Maximize2, Minimize2,
   ExternalLink, Loader2, RefreshCw, List, Grid, Eye, Pencil,
   ArrowLeft, FileCode, Table as TableIcon, Search,
-  Library, Archive, Save, X, RotateCcw, ArrowRight, Layers, Info, Printer, User, History, ArrowUp,
+  Library, Archive, Save, X, RotateCcw, ArrowRight, Layers, Info, Printer, User, History, ArrowUp, Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -356,6 +356,24 @@ export default function ProceduresPage() {
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1"><History className="w-3 h-3" /> Rev: 01</span>
                         <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> P-SOP-{proc.id.toUpperCase()}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {isEditMode ? (
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3 text-primary/40" />
+                            <input
+                              type="date"
+                              value={proc.approvalDate}
+                              onChange={(e) => updateProcedure(proc.id, { approvalDate: e.target.value })}
+                              className="h-6 w-[130px] text-[10px] bg-background border border-primary/20 rounded px-1.5 text-foreground"
+                            />
+                          </div>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Approved: {new Date(proc.approvalDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
