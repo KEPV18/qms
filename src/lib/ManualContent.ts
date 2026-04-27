@@ -12,6 +12,7 @@ export const MANNUAL_METADATA = {
   updateDate: "03/2026",
   preparedBy: "Ahmed Khaled (QMS Team Leader)",
   approvedBy: "Kareem Yehia (CEO)",
+  approvalDate: "March 2026",
 };
 
 export const MANUAL_CONTENT: ManualSection[] = [
