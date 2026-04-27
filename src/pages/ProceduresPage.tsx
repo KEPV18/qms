@@ -188,6 +188,15 @@ export default function ProceduresPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <div className="relative hidden sm:block">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              className="pl-8 h-8 w-40 text-xs bg-muted/30 border-border/40 rounded-lg"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
             <TabsList className="grid grid-cols-2 h-9 p-0.5 bg-muted/30 backdrop-blur-sm rounded-lg">
               <TabsTrigger value="digital" className="gap-1.5 text-xs rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
@@ -198,6 +207,22 @@ export default function ProceduresPage() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          <Button
+            variant={isEditMode ? "default" : "outline"}
+            size="sm"
+            className={cn("gap-1.5 h-8 text-xs rounded-lg", isEditMode && "animate-pulse shadow-md")}
+            onClick={() => setIsEditMode(!isEditMode)}
+          >
+            {isEditMode ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+            {isEditMode ? "Done" : "Edit"}
+          </Button>
+          {isEditMode && (
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs text-destructive hover:bg-destructive/10 rounded-lg"
+              onClick={() => { if (confirm("Reset all procedures to default?")) { resetToDefault(); toast.info("Procedures reset"); } }}
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Reset
+            </Button>
+          )}
         </div>
       </div>
 
@@ -232,32 +257,11 @@ export default function ProceduresPage() {
                   </button>
                 ))}
               </nav>
-              <div className="p-3 border-t border-border/20 bg-muted/10 space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-                  <Input
-                    placeholder="Search..."
-                    className="pl-7 h-7 text-[11px] bg-background/50 border-border/40 rounded-lg"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+              <div className="p-3 border-t border-border/20 bg-muted/10 space-y-1.5 text-[10px]">
+                <div className="flex justify-between text-muted-foreground">
+                  <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> Total</span>
+                  <span className="font-semibold text-foreground text-[9px]">{digitalProcedures.length} SOPs</span>
                 </div>
-                <Button
-                  variant={isEditMode ? "default" : "outline"}
-                  size="sm"
-                  className="w-full gap-1.5 h-7 text-[10px] rounded-lg"
-                  onClick={() => setIsEditMode(!isEditMode)}
-                >
-                  {isEditMode ? <X className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
-                  {isEditMode ? "Exit Edit" : "Edit All"}
-                </Button>
-                {isEditMode && (
-                  <Button variant="ghost" size="sm" className="w-full gap-1.5 h-6 text-[10px] text-destructive"
-                    onClick={() => confirm("Reset all procedures?") && resetToDefault()}
-                  >
-                    <RotateCcw className="w-3 h-3" /> Reset all
-                  </Button>
-                )}
               </div>
             </div>
 
