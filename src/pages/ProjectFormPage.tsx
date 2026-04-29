@@ -105,16 +105,22 @@ export default function ProjectFormPage() {
 
   const [formData, setFormData] = useState<Record<string, any>>({
     name: "",
-    nameAr: "",
     type: "",
-    typeAr: "",
     client: "",
     status: "active",
     startDate: "",
     endDate: "",
     team: [{ role: "", count: 1 }],
     description: "",
-    descriptionAr: "",
+    composition: "",
+    endProduct: "",
+    methodOfPrevention: "",
+    storageCondition: "",
+    distributionMethod: "",
+    supportPeriod: "",
+    licensing: "",
+    intendedUse: "",
+    regulatoryRequirements: "",
     f19Record: "",
     f28Records: [],
     agents: [],
@@ -286,17 +292,6 @@ export default function ProjectFormPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="nameAr">Project Name (Arabic)</Label>
-                    <Input
-                      id="nameAr"
-                      value={formData.nameAr || ""}
-                      onChange={(e) => updateField("nameAr", e.target.value)}
-                      placeholder="اسم المشروع بالعربية"
-                      dir="rtl"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="type">Project Type *</Label>
                     <Input
                       id="type"
@@ -306,17 +301,6 @@ export default function ProjectFormPage() {
                       className={cn(errors.type && "border-red-500")}
                     />
                     {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="typeAr">Project Type (Arabic)</Label>
-                    <Input
-                      id="typeAr"
-                      value={formData.typeAr || ""}
-                      onChange={(e) => updateField("typeAr", e.target.value)}
-                      placeholder="نوع المشروع بالعربية"
-                      dir="rtl"
-                    />
                   </div>
                 </div>
               </Card>
@@ -390,7 +374,7 @@ export default function ProjectFormPage() {
                 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description (English) *</Label>
+                    <Label htmlFor="description">Description *</Label>
                     <Textarea
                       id="description"
                       value={formData.description || ""}
@@ -401,17 +385,48 @@ export default function ProjectFormPage() {
                     />
                     {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                   </div>
+                </div>
+              </Card>
 
+              {/* F/19 Product Details */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Product Description (F/19)</h2>
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="descriptionAr">Description (Arabic)</Label>
-                    <Textarea
-                      id="descriptionAr"
-                      value={formData.descriptionAr || ""}
-                      onChange={(e) => updateField("descriptionAr", e.target.value)}
-                      placeholder="وصف المشروع بالعربية..."
-                      rows={4}
-                      dir="rtl"
-                    />
+                    <Label htmlFor="composition">Composition</Label>
+                    <Input id="composition" value={formData.composition || ""} onChange={(e) => updateField("composition", e.target.value)} placeholder="e.g., 10 Agents + 2 Reviewers" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endProduct">End Product</Label>
+                    <Textarea id="endProduct" value={formData.endProduct || ""} onChange={(e) => updateField("endProduct", e.target.value)} placeholder="Deliverables and outputs..." rows={2} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="methodOfPrevention">Method of Prevention</Label>
+                    <Textarea id="methodOfPrevention" value={formData.methodOfPrevention || ""} onChange={(e) => updateField("methodOfPrevention", e.target.value)} placeholder="Quality prevention measures..." rows={2} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="storageCondition">Storage Condition</Label>
+                    <Input id="storageCondition" value={formData.storageCondition || ""} onChange={(e) => updateField("storageCondition", e.target.value)} placeholder="e.g., Data stored on client-secured platform" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="distributionMethod">Distribution Method</Label>
+                    <Input id="distributionMethod" value={formData.distributionMethod || ""} onChange={(e) => updateField("distributionMethod", e.target.value)} placeholder="e.g., Direct submission through client platform" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="supportPeriod">Support & Update Period</Label>
+                    <Input id="supportPeriod" value={formData.supportPeriod || ""} onChange={(e) => updateField("supportPeriod", e.target.value)} placeholder="e.g., Continuous updates based on client feedback" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="licensing">Licensing & Legal</Label>
+                    <Input id="licensing" value={formData.licensing || ""} onChange={(e) => updateField("licensing", e.target.value)} placeholder="e.g., NDA signed, data is client-owned" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="intendedUse">Intended Use</Label>
+                    <Input id="intendedUse" value={formData.intendedUse || ""} onChange={(e) => updateField("intendedUse", e.target.value)} placeholder="e.g., AI model training and improvement" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="regulatoryRequirements">Regulatory Requirements</Label>
+                    <Input id="regulatoryRequirements" value={formData.regulatoryRequirements || ""} onChange={(e) => updateField("regulatoryRequirements", e.target.value)} placeholder="e.g., ISO 9001, client data protection policies" />
                   </div>
                 </div>
               </Card>
