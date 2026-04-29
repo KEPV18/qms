@@ -103,7 +103,7 @@ export default function ProjectFormPage() {
 
   const existingProject = isEditing ? getById(id) : null;
 
-  const [formData, setFormData] = useState<Partial<Project>>>({
+  const [formData, setFormData] = useState<Record<string, any>>({
     name: "",
     nameAr: "",
     type: "",

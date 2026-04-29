@@ -214,7 +214,10 @@ export default function ProjectDetailPage() {
                 </span>
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">{project.id}</span>
+                <span className="text-muted-foreground/40">·</span>
                 <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">{project.code}</span>
+                <span className="text-muted-foreground/40">·</span>
                 <span>{project.type}</span>
               </div>
             </div>

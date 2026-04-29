@@ -12,6 +12,8 @@ export interface TeamMember {
 export interface Project {
   id: string;
   code: string;
+  projectCode: string;
+  serialNumber: string;
   name: string;
   nameAr?: string;
   type: string;
@@ -34,8 +36,10 @@ export interface Project {
 // Initial Projects Data
 const INITIAL_PROJECTS: Project[] = [
   {
-    id: "project-001",
+    id: "VDP-001",
     code: "PROJ-001",
+    projectCode: "VDP",
+    serialNumber: "001",
     name: "Video Detection Project",
     nameAr: "مشروع كشف الفيديو",
     type: "Video Classification & Detection",
@@ -56,8 +60,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-04-20"
   },
   {
-    id: "project-002",
+    id: "VAI-002",
     code: "PROJ-002",
+    projectCode: "VAI",
+    serialNumber: "002",
     name: "Vocal AI Project",
     nameAr: "مشروع الذكاء الاصطناعي الصوتي",
     type: "Conversational AI Design & Testing",
@@ -79,8 +85,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-04-20"
   },
   {
-    id: "project-003",
+    id: "TSA-003",
     code: "PROJ-003",
+    projectCode: "TSA",
+    serialNumber: "003",
     name: "Tennis / Sports Analytics",
     nameAr: "تحليلات التنس / الرياضة",
     type: "Sports Data Analysis & Tagging",
@@ -100,8 +108,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-04-15"
   },
   {
-    id: "project-004",
+    id: "OMN-004",
     code: "PROJ-004",
+    projectCode: "OMN",
+    serialNumber: "004",
     name: "OMNIAZ",
     nameAr: "أومنياz",
     type: "Data Annotation + Store Miner & Mapping",
@@ -121,8 +131,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-04-18"
   },
   {
-    id: "project-005",
+    id: "ETH-005",
     code: "PROJ-005",
+    projectCode: "ETH",
+    serialNumber: "005",
     name: "ETH – AI Model Testing",
     nameAr: "ETH - اختبار نماذج الذكاء الاصطناعي",
     type: "AI Output Evaluation & Validation",
@@ -146,8 +158,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-03-05"
   },
   {
-    id: "project-006",
+    id: "BTF-006",
     code: "PROJ-006",
+    projectCode: "BTF",
+    serialNumber: "006",
     name: "BatFast",
     nameAr: "باتفاست",
     type: "Image/Video Annotation",
@@ -170,8 +184,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-02-17"
   },
   {
-    id: "project-007",
+    id: "ETH2-007",
     code: "PROJ-007",
+    projectCode: "ETH2",
+    serialNumber: "007",
     name: "ETH — AI Model Testing (Copy 2)",
     nameAr: "ETH - اختبار نماذج الذكاء الاصطناعي (نسخة 2)",
     type: "AI Model Output Validation",
@@ -194,8 +210,10 @@ const INITIAL_PROJECTS: Project[] = [
     updatedAt: "2026-03-05"
   },
   {
-    id: "project-008",
+    id: "ETC-008",
     code: "PROJ-008",
+    projectCode: "ETC",
+    serialNumber: "008",
     name: "ETH-Cedric",
     nameAr: "ETH-سيدريك",
     type: "Video Annotation & Quality Review",
@@ -294,12 +312,16 @@ export const getNextProjectCode = (): string => {
 };
 
 // Create new project
-export const createProject = (projectData: Omit<Project, "id" | "code" | "createdAt" | "updatedAt">): Project => {
+export const createProject = (projectData: Omit<Project, "id" | "code" | "projectCode" | "serialNumber" | "createdAt" | "updatedAt">): Project => {
   const projects = getAllProjects();
+  const nextSerial = projects.length + 1;
+  const serialStr = String(nextSerial).padStart(3, "0");
   const newProject: Project = {
     ...projectData,
-    id: `project-${Date.now()}`,
-    code: getNextProjectCode(),
+    id: `PRJ-${serialStr}`,
+    code: `PROJ-${serialStr}`,
+    projectCode: `PRJ`,
+    serialNumber: serialStr,
     createdAt: new Date().toISOString().split("T")[0],
     updatedAt: new Date().toISOString().split("T")[0]
   };

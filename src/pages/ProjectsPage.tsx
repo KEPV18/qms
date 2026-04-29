@@ -132,7 +132,13 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
         <h3 className="mt-3 text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
           {project.name}
         </h3>
-        <p className="text-sm text-gray-500">{project.type}</p>
+        <div className="flex items-center gap-1.5 mt-1">
+          <Badge variant="secondary" className="text-[10px] font-mono tracking-wider px-1.5 py-0 h-5">
+            {project.id}
+          </Badge>
+          <span className="text-xs text-muted-foreground">·</span>
+          <p className="text-sm text-gray-500">{project.type}</p>
+        </div>
 
         {/* Status Badge */}
         <div className="mt-3">
