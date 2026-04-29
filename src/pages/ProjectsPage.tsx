@@ -272,11 +272,6 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
                 {project.f19Record}
               </Badge>
             )}
-            {project.f28Records?.map((f28, i) => (
-              <Badge key={i} variant="outline" className="text-xs bg-muted/40">
-                {f28}
-              </Badge>
-            ))}
           </div>
         </div>
 

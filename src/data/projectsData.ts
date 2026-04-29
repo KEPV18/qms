@@ -33,7 +33,6 @@ export interface Project {
   intendedUse?: string;
   regulatoryRequirements?: string;
   f19Record?: string;
-  f28Records?: string[];
   agents?: string[];
   createdAt?: string;
   updatedAt?: string;
@@ -68,7 +67,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "AI model training and improvement",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-001",
-    f28Records: ["F/28-001"],
+
     createdAt: "2026-01-15",
     updatedAt: "2026-04-20"
   },
@@ -100,7 +99,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "Conversational AI optimization, assistant performance improvement, and model training support",
     regulatoryRequirements: "Client Data Privacy Policies, Confidentiality Agreements, Internal SOP Compliance, ISO 9001 Quality Framework",
     f19Record: "F/19-002",
-    f28Records: ["F/28-002"],
+
     createdAt: "2026-01-20",
     updatedAt: "2026-04-20"
   },
@@ -131,7 +130,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "Sports performance analysis, Player and match analytics, AI and predictive sports models training",
     regulatoryRequirements: "Client data protection policies, Internal quality and validation procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-003",
-    f28Records: ["F/28-003"],
+
     createdAt: "2026-02-01",
     updatedAt: "2026-04-15"
   },
@@ -162,7 +161,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "Retail intelligence platform data enrichment and store location mapping",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-004",
-    f28Records: ["F/28-004"],
+
     createdAt: "2026-02-10",
     updatedAt: "2026-04-18"
   },
@@ -193,7 +192,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "AI model training, fine-tuning, and performance improvement",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-005",
-    f28Records: ["F/28-010"],
+
     agents: ["VIZ-001", "VIZ-002", "VIZ-003", "VIZ-004", "VIZ-005", "VIZ-006", "VIZ-007",
               "VIZ-008", "VIZ-009", "VIZ-010", "VIZ-011", "VIZ-012", "VIZ-013", "VIZ-014", "VIZ-015", "VIZ-016"],
     createdAt: "2026-02-01",
@@ -225,7 +224,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "AI model training and image recognition improvement",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-006",
-    f28Records: ["F/28-009"],
+
     agents: ["VIZ-001", "VIZ-002", "VIZ-003", "VIZ-004", "VIZ-005"],
     createdAt: "2026-01-25",
     updatedAt: "2026-02-17"
@@ -258,7 +257,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "AI model training, fine-tuning, and performance improvement",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-007",
-    f28Records: ["F/28-011", "F/28-012"],
+
     createdAt: "2026-02-15",
     updatedAt: "2026-03-05"
   },
@@ -290,7 +289,7 @@ const INITIAL_PROJECTS: Project[] = [
     intendedUse: "AI model training, fine-tuning, and video recognition improvement",
     regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-008",
-    f28Records: ["F/28-011", "F/28-012"],
+
     agents: ["VIZ-001", "VIZ-003", "VIZ-013", "VIZ-017", "VIZ-018", "VIZ-019"],
     createdAt: "2026-02-20",
     updatedAt: "2026-03-05"

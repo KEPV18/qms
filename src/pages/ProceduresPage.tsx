@@ -6,6 +6,7 @@ import {
   ExternalLink, Loader2, RefreshCw, List, Grid, Eye, Pencil,
   ArrowLeft, FileCode, Table as TableIcon, Search,
   Library, Archive, Save, X, RotateCcw, ArrowRight, Layers, Info, Printer, User, History, ArrowUp, Calendar, Clock,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -275,6 +276,31 @@ export default function ProceduresPage() {
             {/* Scrollable Document */}
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-smooth">
               <div className="max-w-3xl mx-auto px-5 md:px-8 py-8 md:py-12 space-y-0">
+                {/* Approval Banner */}
+                <div className="mb-8 p-5 rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.03] to-primary/[0.01]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary/60">Document Approval</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div className="p-3 rounded-lg bg-background/80 border border-border/20">
+                      <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50 mb-1">Prepared By</span>
+                      <span className="text-foreground font-semibold">Ahmed Khaled (QMS Team Leader)</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-background/80 border border-border/20">
+                      <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50 mb-1">Approved By (CEO)</span>
+                      <span className="text-foreground font-semibold">Kareem Yehia (CEO)</span>
+                    </div>
+                    <div className="p-3 rounded-lg bg-background/80 border border-border/20">
+                      <span className="block text-[9px] font-bold uppercase tracking-[0.1em] text-muted-foreground/50 mb-1">Approval Date</span>
+                      <span className="text-foreground font-semibold">January 2026</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[10px] text-muted-foreground/50 text-center">
+                    Top Management — Ahmed Khaled &amp; Kareem Yehia — approved this document as the official QMS Procedures
+                  </div>
+                </div>
+
                 {filteredProcedures.map((proc, procIdx) => (
                   <div
                     key={proc.id}

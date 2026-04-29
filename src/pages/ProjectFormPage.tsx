@@ -122,7 +122,6 @@ export default function ProjectFormPage() {
     intendedUse: "",
     regulatoryRequirements: "",
     f19Record: "",
-    f28Records: [],
     agents: [],
   });
 
@@ -188,13 +187,6 @@ export default function ProjectFormPage() {
         data.agents = typeof formData.agents === "string" 
           ? (formData.agents as string).split(",").map(a => a.trim()).filter(Boolean)
           : formData.agents;
-      }
-
-      // Process F28 records
-      if (formData.f28Records) {
-        data.f28Records = typeof formData.f28Records === "string"
-          ? (formData.f28Records as string).split(",").map(r => r.trim()).filter(Boolean)
-          : formData.f28Records;
       }
 
       if (isEditing && id) {
@@ -453,18 +445,6 @@ export default function ProjectFormPage() {
                       value={formData.f19Record || ""}
                       onChange={(e) => updateField("f19Record", e.target.value)}
                       placeholder="e.g., F/19-001"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="f28Records">F/28 Training Records (comma-separated)</Label>
-                    <Input
-                      id="f28Records"
-                      value={typeof formData.f28Records === "string" 
-                        ? formData.f28Records 
-                        : formData.f28Records?.join(", ") || ""}
-                      onChange={(e) => updateField("f28Records", e.target.value)}
-                      placeholder="e.g., F/28-001, F/28-002"
                     />
                   </div>
 

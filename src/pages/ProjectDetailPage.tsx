@@ -62,9 +62,8 @@ function TeamSection({ team }: { team: Project["team"] }) {
 // ============================================================================
 // QMS Records Section
 // ============================================================================
-function QMSRecordsSection({ f19Record, f28Records, agents }: { 
+function QMSRecordsSection({ f19Record, agents }: { 
   f19Record?: string; 
-  f28Records?: string[];
   agents?: string[];
 }) {
   return (
@@ -74,7 +73,7 @@ function QMSRecordsSection({ f19Record, f28Records, agents }: {
         QMS Records
       </h3>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Card className="p-4 border bg-card">
           <p className="text-xs font-medium text-muted-foreground uppercase mb-3">Product Description</p>
           {f19Record ? (
@@ -89,28 +88,6 @@ function QMSRecordsSection({ f19Record, f28Records, agents }: {
             </a>
           ) : (
             <p className="text-muted-foreground/60 italic text-sm">No F-19 record linked</p>
-          )}
-        </Card>
-        
-        <Card className="p-4 border bg-card">
-          <p className="text-xs font-medium text-muted-foreground uppercase mb-3">F-28 Records</p>
-          {f28Records && f28Records.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {f28Records.map((record, idx) => (
-                <a 
-                  key={idx}
-                  href={`https://drive.google.com/drive/search?q=${record}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors"
-                >
-                  <Tag className="w-3 h-3" />
-                  {record}
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground/60 italic text-sm">No F-28 records linked</p>
           )}
         </Card>
       </div>
@@ -392,7 +369,6 @@ export default function ProjectDetailPage() {
             <Card className="p-6 border bg-card">
               <QMSRecordsSection 
                 f19Record={project.f19Record} 
-                f28Records={project.f28Records}
                 agents={project.agents}
               />
             </Card>
