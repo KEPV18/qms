@@ -47,8 +47,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { AppShell } from "@/components/layout/AppShell";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { DecisionBanner } from "@/components/ui/DecisionBanner";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
@@ -68,39 +66,40 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
   const statusConfig = {
     active: { 
       label: "Active", 
-      color: "bg-emerald-100 text-emerald-800 border-emerald-200",
-      icon: CheckCircle2 
+      color: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+      icon: CheckCircle2,
+      iconColor: "text-emerald-500"
     },
     completed: { 
       label: "Completed", 
-      color: "bg-blue-100 text-blue-800 border-blue-200",
-      icon: CheckCircle2 
+      color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+      icon: CheckCircle2,
+      iconColor: "text-blue-500"
     },
     pending: { 
       label: "Pending", 
-      color: "bg-amber-100 text-amber-800 border-amber-200",
-      icon: Clock 
+      color: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+      icon: Clock,
+      iconColor: "text-amber-500"
     },
   };
 
   const status = statusConfig[project.status];
   const StatusIcon = status.icon;
 
-  const compliancePercent = isCompleted ? 100 : isActive ? 85 : 0;
-
   return (
     <Card className={cn(
       "group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
-      "border border-gray-200 bg-white",
-      isActive && "border-emerald-200",
-      isCompleted && "border-blue-200"
+      "border bg-card",
+      isActive && "border-emerald-400/30 dark:border-emerald-600/30",
+      isCompleted && "border-blue-400/30 dark:border-blue-600/30"
     )}>
       {/* Header */}
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div className={cn(
             "w-10 h-10 rounded-lg flex items-center justify-center",
-            isActive ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"
+            isActive ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
           )}>
             <Briefcase className="w-5 h-5" />
           </div>
@@ -120,7 +119,7 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDelete} className="text-red-600">
+              <DropdownMenuItem onClick={onDelete} className="text-red-600 dark:text-red-400">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
@@ -129,7 +128,7 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="mt-3 text-lg font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
+        <h3 className="mt-3 text-lg font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
           {project.name}
         </h3>
         <div className="flex items-center gap-1.5 mt-1">
@@ -137,7 +136,7 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
             {project.id}
           </Badge>
           <span className="text-xs text-muted-foreground">·</span>
-          <p className="text-sm text-gray-500">{project.type}</p>
+          <p className="text-sm text-muted-foreground">{project.type}</p>
         </div>
 
         {/* Status Badge */}
@@ -146,43 +145,43 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
             "inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full border",
             status.color
           )}>
-            <StatusIcon className="w-3 h-3" />
+            <StatusIcon className={cn("w-3 h-3", status.iconColor)} />
             {status.label}
           </span>
         </div>
 
         {/* Info */}
-        <div className="mt-4 space-y-2 text-sm text-gray-600">
+        <div className="mt-4 space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gray-400" />
+            <Users className="w-4 h-4 text-muted-foreground/50" />
             <span>{project.teamSize} team members</span>
           </div>
           {project.startDate && (
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
+              <Calendar className="w-4 h-4 text-muted-foreground/50" />
               <span>
-                {new Date(project.startDate).toLocaleDateString()} - 
-                {project.endDate ? new Date(project.endDate).toLocaleDateString() : "Present"}
+                {new Date(project.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} - 
+                {project.endDate ? new Date(project.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "Present"}
               </span>
             </div>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-gray-400 font-medium">Client:</span>
+            <span className="text-muted-foreground/60 font-medium">Client:</span>
             <span>{project.client}</span>
           </div>
         </div>
 
         {/* QMS Records */}
         <div className="mt-4">
-          <p className="text-xs font-medium text-gray-500 uppercase mb-2">QMS Records</p>
+          <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider mb-2">QMS Records</p>
           <div className="flex flex-wrap gap-1.5">
             {project.f19Record && (
-              <Badge variant="secondary" className="text-xs bg-gray-100">
+              <Badge variant="outline" className="text-xs bg-muted/40">
                 {project.f19Record}
               </Badge>
             )}
             {project.f28Records?.map((f28, i) => (
-              <Badge key={i} variant="secondary" className="text-xs bg-gray-100">
+              <Badge key={i} variant="outline" className="text-xs bg-muted/40">
                 {f28}
               </Badge>
             ))}
@@ -193,7 +192,7 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
         <div className="mt-5 flex gap-2">
           <Button 
             onClick={onView}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white"
             size="sm"
           >
             View Details
@@ -216,10 +215,10 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
 // ============================================================================
 function StatsCards({ stats }: { stats: ReturnType<typeof useProjects>["stats"] }) {
   const cards = [
-    { label: "Total Projects", value: stats.total, color: "bg-blue-50 text-blue-700" },
-    { label: "Active", value: stats.active, color: "bg-emerald-50 text-emerald-700" },
-    { label: "Completed", value: stats.completed, color: "bg-purple-50 text-purple-700" },
-    { label: "Team Members", value: stats.totalTeam, color: "bg-amber-50 text-amber-700" },
+    { label: "Total Projects", value: stats.total, color: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400" },
+    { label: "Active", value: stats.active, color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400" },
+    { label: "Completed", value: stats.completed, color: "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400" },
+    { label: "Team Members", value: stats.totalTeam, color: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400" },
   ];
 
   return (
@@ -252,7 +251,7 @@ function DeleteDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-red-600">Delete Project?</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-red-600 dark:text-red-400">Delete Project?</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete <strong>{projectName}</strong>? This action cannot be undone.
           </DialogDescription>
@@ -327,15 +326,18 @@ export default function ProjectsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <PageHeader
-            icon={Briefcase}
-            iconClassName="text-emerald-600"
-            title="Projects"
-            description="Manage all 8 Vizzlo projects with QMS compliance"
-          />
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800/50">
+              <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-foreground">Projects</h1>
+              <p className="text-xs text-muted-foreground">Manage all Vizzlo projects with QMS compliance</p>
+            </div>
+          </div>
           <Button 
             onClick={handleAddNew}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
+            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white gap-2"
           >
             <Plus className="w-4 h-4" />
             Add New Project
@@ -346,11 +348,11 @@ export default function ProjectsPage() {
         <StatsCards stats={stats} />
 
         {/* Filters */}
-        <Card className="p-4">
+        <Card className="p-4 bg-card border">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search projects..."
                   value={searchQuery}
@@ -370,7 +372,7 @@ export default function ProjectsPage() {
             </div>
 
             {showFilters && (
-              <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t">
+              <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-border">
                 <Select value={statusFilter} onValueChange={(v: typeof statusFilter) => setStatusFilter(v)}>
                   <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -413,19 +415,19 @@ export default function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <Card className="p-12 text-center">
-            <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-            <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
+          <Card className="p-12 text-center bg-card border">
+            <Briefcase className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No projects found</h3>
+            <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
           </Card>
         )}
 
         {/* Footer */}
-        <Card className="p-4 bg-gray-50">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+        <Card className="p-4 bg-muted/30 border">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <p>
-              Showing <span className="font-bold">{filteredProjects.length}</span> of {" "}
-              <span className="font-bold">{projects.length}</span> projects
+              Showing <span className="font-bold text-foreground">{filteredProjects.length}</span> of {" "}
+              <span className="font-bold text-foreground">{projects.length}</span> projects
             </p>
             <div className="flex gap-4 text-xs">
               <span className="flex items-center gap-1">
