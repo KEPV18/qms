@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useQMSData } from "@/hooks/useQMSData";
+import { getProcedureForRecord } from "@/lib/procedureRecordMapping";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DecisionBanner } from "@/components/ui/DecisionBanner";
 import { StateScreen } from "@/components/ui/StateScreen";
@@ -8,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import {
   FileText, Search, Clock, FolderOpen, Calendar, PlusCircle,
-  ChevronDown, ChevronRight, ExternalLink, AlertTriangle, CheckCircle,
+  ChevronDown, ChevronRight, ExternalLink, AlertTriangle, CheckCircle, BookOpen,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -244,6 +245,23 @@ export default function FormsPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-foreground truncate">{form.recordName}</p>
                               <p className="text-xs text-muted-foreground truncate mt-0.5">{form.description}</p>
+                              {/* Procedure Reference */}
+                              {(() => {
+                                const linkedProc = getProcedureForRecord(form);
+                                if (!linkedProc) return null;
+                                return (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate("/procedures");
+                                    }}
+                                    className="inline-flex items-center gap-1 mt-1 text-[9px] text-primary/60 hover:text-primary transition-colors"
+                                  >
+                                    <BookOpen className="w-2.5 h-2.5" />
+                                    Referenced by: {linkedProc.title.replace(/^\d+\.\s*/, "")}
+                                  </button>
+                                );
+                              })()}
                             </div>
 
                             <div className="flex items-center gap-3 shrink-0 text-[10px] text-muted-foreground">

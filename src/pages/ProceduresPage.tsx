@@ -387,6 +387,42 @@ export default function ProceduresPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* Related QMS Records */}
+                    {(() => {
+                      const related = qmsRecords ? getRecordsForProcedure(proc.id, qmsRecords) : [];
+                      if (related.length === 0) return null;
+                      return (
+                        <div className="mt-5 pt-4 border-t border-border/30">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Layers className="w-3.5 h-3.5 text-primary/40" />
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/70">Related QMS Records</span>
+                            <Badge variant="outline" className="text-[9px] h-4 font-mono">{related.length}</Badge>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {related.map((rec) => (
+                              <div
+                                key={rec.code}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-card/40 hover:bg-muted/20 hover:border-primary/30 transition-all cursor-pointer group"
+                                onClick={() => navigate(`/record/${encodeURIComponent(rec.code)}`)}
+                              >
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                                  {rec.code}
+                                </span>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-foreground truncate">{rec.recordName}</p>
+                                  <p className="text-[9px] text-muted-foreground truncate">
+                                    {rec.whenToFill || "As needed"}
+                                    {rec.actualRecordCount ? ` · ${rec.actualRecordCount} records` : ""}
+                                  </p>
+                                </div>
+                                <FileText className="w-3 h-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
