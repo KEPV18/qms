@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { useQMSData } from "@/hooks/useQMSData";
 import { getProcedureForRecord } from "@/lib/procedureRecordMapping";
+import { PROCEDURES_CONTENT } from "@/lib/ProceduresContent";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DecisionBanner } from "@/components/ui/DecisionBanner";
 import { StateScreen } from "@/components/ui/StateScreen";
@@ -265,12 +266,21 @@ export default function FormsPage() {
                             </div>
 
                             <div className="flex items-center gap-3 shrink-0 text-[10px] text-muted-foreground">
-                              {form.whenToFill && form.whenToFill !== "As needed" && (
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {form.whenToFill}
-                                </span>
-                              )}
+                              {(() => {
+                                // Show frequency from the linked procedure's recordFrequency
+                                const linkedProc = getProcedureForRecord(form);
+                                const linkedProcData = linkedProc
+                                  ? PROCEDURES_CONTENT.find(p => p.id === linkedProc.id)
+                                  : null;
+                                const frequency = linkedProcData?.recordFrequency || form.whenToFill || "";
+                                if (!frequency || frequency === "As needed") return null;
+                                return (
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {frequency}
+                                  </span>
+                                );
+                              })()}
                               {hasRecords && (
                                 <span className="text-success font-bold">
                                   {form.actualRecordCount} record{form.actualRecordCount !== 1 ? "s" : ""}

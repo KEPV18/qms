@@ -247,12 +247,12 @@ function EditForm({ project, onSave, onCancel }: EditFormProps) {
 export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getProjectById, update, delete: deleteProject } = useProjects();
+  const { getById, update, delete: deleteProject } = useProjects();
   
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
 
-  const project = getProjectById(id || "");
+  const project = getById(id || "");
 
   if (!project) {
     return (
@@ -281,7 +281,7 @@ export default function ProjectDetailPage() {
   const status = statusBadge[project.status];
 
   const handleSave = (updated: Project) => {
-    update(updated);
+    update(updated.id, updated);
     setIsEditing(false);
   };
 

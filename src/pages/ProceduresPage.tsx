@@ -5,7 +5,7 @@ import {
   FileText, Folder, ChevronLeft, ChevronRight, Maximize2, Minimize2,
   ExternalLink, Loader2, RefreshCw, List, Grid, Eye, Pencil,
   ArrowLeft, FileCode, Table as TableIcon, Search,
-  Library, Archive, Save, X, RotateCcw, ArrowRight, Layers, Info, Printer, User, History, ArrowUp, Calendar,
+  Library, Archive, Save, X, RotateCcw, ArrowRight, Layers, Info, Printer, User, History, ArrowUp, Calendar, Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -368,7 +368,23 @@ export default function ProceduresPage() {
                         <span className="flex items-center gap-1"><History className="w-3 h-3" /> Rev: 01</span>
                         <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> P-SOP-{proc.id.toUpperCase()}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
+                        {isEditMode && (
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3 h-3 text-primary/40" />
+                            <select
+                              value={proc.recordFrequency || "As needed"}
+                              onChange={(e) => updateProcedure(proc.id, { recordFrequency: e.target.value })}
+                              className="h-6 text-[10px] bg-background border border-primary/20 rounded px-1.5 text-foreground"
+                            >
+                              <option value="As needed">As needed</option>
+                              <option value="Monthly">Monthly</option>
+                              <option value="Quarterly">Quarterly</option>
+                              <option value="Twice a year">Twice a year</option>
+                              <option value="Annually">Annually</option>
+                            </select>
+                          </div>
+                        )}
                         {isEditMode ? (
                           <div className="flex items-center gap-1.5">
                             <Calendar className="w-3 h-3 text-primary/40" />
@@ -412,7 +428,7 @@ export default function ProceduresPage() {
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-medium text-foreground truncate">{rec.recordName}</p>
                                   <p className="text-[9px] text-muted-foreground truncate">
-                                    {rec.whenToFill || "As needed"}
+                                    {proc.recordFrequency || "As needed"}
                                     {rec.actualRecordCount ? ` · ${rec.actualRecordCount} records` : ""}
                                   </p>
                                 </div>
