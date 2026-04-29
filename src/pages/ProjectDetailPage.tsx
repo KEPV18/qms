@@ -1,254 +1,333 @@
-import { useState, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { AppShell } from "@/components/layout/AppShell";
-import { useQMSData } from "@/hooks/useQMSData";
-import type { FileReview } from "@/lib/googleSheets";
-import {
-  Briefcase,
-  Search,
-  LayoutGrid,
-  List,
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { 
+  Briefcase, 
+  ArrowLeft, 
+  Edit, 
+  Trash2, 
+  Users, 
+  Calendar, 
   CheckCircle2,
   Clock,
   AlertCircle,
-  AlertTriangle,
-  FolderOpen,
+  Building2,
   FileText,
-  RefreshCw
+  Tag,
+  Save
 } from "lucide-react";
+import { useProjects, type Project } from "@/data/projectsData";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RecordsTable } from "@/components/records/RecordsTable";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { AppShell } from "@/components/layout/AppShell";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { DecisionBanner } from "@/components/ui/DecisionBanner";
-import { StatsRow } from "@/components/ui/StatsRow";
 
+// ============================================================================
+// Team Member Display
+// ============================================================================
+function TeamSection({ team }: { team: Project["team"] }) {
+  const totalMembers = team.reduce((sum, t) => sum + t.count, 0);
+  
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          <Users className="w-5 h-5 text-emerald-600" />
+          Team Composition
+        </h3>
+        <Badge variant="secondary">{totalMembers} members</Badge>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {team.map((member, idx) => (
+          <Card key={idx} className="p-4 border-0 bg-gray-50">
+            <p className="text-sm font-medium text-gray-900">{member.role}</p>
+            <p className="text-2xl font-bold text-emerald-600">{member.count}</p>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// QMS Records Section
+// ============================================================================
+function QMSRecordsSection({ f19Record, f28Records, agents }: { 
+  f19Record?: string; 
+  f28Records?: string[];
+  agents?: string[];
+}) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        <FileText className="w-5 h-5 text-emerald-600" />
+        QMS Records
+      </h3>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-4">
+          <p className="text-xs font-medium text-gray-500 uppercase mb-3">Product Description</p>
+          {f19Record ? (
+            <a 
+              href={`https://drive.google.com/drive/search?q=${f19Record}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              <Tag className="w-4 h-4" />
+              {f19Record}
+            </a>
+          ) : (
+            <p className="text-gray-400 italic">No F/19 record linked</p>
+          )}
+        </Card>
+
+        <Card className="p-4">
+          <p className="text-xs font-medium text-gray-500 uppercase mb-3">Training Records</p>
+          {f28Records && f28Records.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {f28Records.map((f28, idx) => (
+                <Badge key={idx} variant="secondary">{f28}</Badge>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 italic">No F/28 records linked</p>
+          )}
+        </Card>
+      </div>
+
+      {agents && agents.length > 0 && (
+        <Card className="p-4">
+          <p className="text-xs font-medium text-gray-500 uppercase mb-3">
+            Assigned Agents ({agents.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {agents.map((agent, idx) => (
+              <Badge key={idx} variant="outline" className="text-xs">
+                {agent}
+              </Badge>
+            ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Main Page
+// ============================================================================
 export default function ProjectDetailPage() {
-  const { projectName } = useParams<{ projectName: string }>();
-  const { data: records, isLoading, isError, error, refetch } = useQMSData();
-  const [activeTab, setActiveTab] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"card" | "compact">("compact");
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { getById, delete: deleteProject } = useProjects();
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
-  const decodedProject = decodeURIComponent(projectName || "");
+  const project = getById(id || "");
 
-  const projectRecords = useMemo(() => {
-    if (!records) return [];
+  if (!project) {
+    return (
+      <AppShell breadcrumbs={[{ label: "Dashboard", path: "/" }, { label: "Projects", path: "/projects" }, { label: "Not Found" }]}>
+        <div className="flex flex-col items-center justify-center py-20">
+          <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Project Not Found</h1>
+          <p className="text-gray-500 mb-6">The project you're looking for doesn't exist.</p>
+          <Button onClick={() => navigate("/projects")}>
+            Back to Projects
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
 
-    return records.filter(record => {
-      if (!record.fileReviews) return false;
+  const isActive = project.status === "active";
+  const isCompleted = project.status === "completed";
+  
+  const statusConfig = {
+    active: { 
+      label: "Active", 
+      color: "bg-emerald-100 text-emerald-800",
+      icon: CheckCircle2 
+    },
+    completed: { 
+      label: "Completed", 
+      color: "bg-blue-100 text-blue-800",
+      icon: CheckCircle2 
+    },
+    pending: { 
+      label: "Pending", 
+      color: "bg-amber-100 text-amber-800",
+      icon: Clock 
+    },
+  };
+  
+  const status = statusConfig[project.status];
+  const StatusIcon = status.icon;
 
-      // Filter the fileReviews within the record too
-      const reviews = Object.entries(record.fileReviews).filter(([fileId, review]: [string, FileReview]) => {
-        // Only count existing files
-        const fileExists = record.files?.some(f => f.id === fileId);
-        if (!fileExists) return false;
+  const handleEdit = () => {
+    navigate(`/projects/${project.id}/edit`);
+  };
 
-        const rawProj = review.project || "General";
-        const normalizedProj = (rawProj === "General / All Company") ? "General" : rawProj;
-        return normalizedProj === decodedProject;
-      });
-
-      return reviews.length > 0;
-    }).map(record => {
-        // Only keep reviews relevant to this project for display in this view
-        const relevantReviews: Record<string, FileReview> = {};
-        const existingFileIds = new Set(record.files?.map(f => f.id) || []);
-
-        Object.entries(record.fileReviews || {}).forEach(([fileId, review]: [string, FileReview]) => {
-            // IMPORTANT: Only count the review if the file still exists in the Drive folder
-            if (!existingFileIds.has(fileId)) return;
-
-            const rawProj = review.project || "General";
-            const normalizedProj = (rawProj === "General / All Company") ? "General" : rawProj;
-            if (normalizedProj === decodedProject) {
-              relevantReviews[fileId] = review;
-            }
-        });
-        // Calculate a representative status for the record based on filtered project files
-        const reviewsArr = Object.values(relevantReviews);
-        let status = "Pending";
-        if (reviewsArr.length > 0) {
-            if (reviewsArr.every((rev: unknown) => rev.status === 'approved')) status = "Compliant ✅";
-            else if (reviewsArr.some((rev: unknown) => rev.status === 'rejected' || rev.status === 'nc')) status = "Rejected ❌";
-        }
-
-        return { ...record, fileReviews: relevantReviews, auditStatus: status, isAtomic: false };
-    });
-  }, [records, decodedProject]);
-
-  const stats = useMemo(() => {
-    let approved = 0, pending = 0, rejected = 0;
-    projectRecords.forEach(r => {
-        if (r.fileReviews) {
-            Object.values(r.fileReviews).forEach((rev: unknown) => {
-                if (rev.status === 'approved') approved++;
-                else if (rev.status === 'rejected') rejected++;
-                else pending++;
-            });
-        }
-    });
-    return { approved, pending, rejected, total: approved + pending + rejected };
-  }, [projectRecords]);
-
-  const filteredRecords = useMemo(() => {
-    return projectRecords.filter(r => {
-        const matchesSearch = r.recordName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                             r.description?.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const reviews = Object.values(r.fileReviews || {});
-        const matchesTab = activeTab === "all" ||
-                          (activeTab === "pending" && reviews.some((rev: unknown) => rev.status !== 'approved' && rev.status !== 'rejected')) ||
-                          (activeTab === "compliant" && reviews.every((rev: unknown) => rev.status === 'approved')) ||
-                          (activeTab === "issues" && reviews.some((rev: unknown) => rev.status === 'rejected'));
-
-        return matchesSearch && matchesTab;
-    });
-  }, [projectRecords, searchQuery, activeTab]);
+  const handleDelete = () => {
+    deleteProject(project.id);
+    navigate("/projects");
+  };
 
   return (
-    <AppShell breadcrumbs={[{ label: "Dashboard", path: "/" }, { label: "Projects", path: "/projects" }, { label: decodedProject }]} maxWidth="max-w-[1600px]">
-      <div className="space-y-8">
-        <PageHeader
-              icon={Briefcase}
-              iconClassName="text-primary"
-              title={decodedProject}
-              description={`Detailed view of all records and compliance status for project ${decodedProject}.`}
-            >
-              <div className="flex h-11 p-1 bg-card border border-border/40 rounded-sm">
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn("px-3 rounded-sm gap-2 font-bold transition-all", viewMode === "compact" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground")}
-                      onClick={() => setViewMode("compact")}
-                  >
-                      <List className="w-4 h-4" />
-                      Rows
-                  </Button>
-                  <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn("px-3 rounded-sm gap-2 font-bold transition-all", viewMode === "card" ? "bg-primary text-primary-foreground shadow-md" : "text-muted-foreground")}
-                      onClick={() => setViewMode("card")}
-                  >
-                      <LayoutGrid className="w-4 h-4" />
-                      Cards
-                  </Button>
-              </div>
-             </PageHeader>
-
-        {/* Decision Banner */}
-        {stats.rejected > 0 ? (
-          <DecisionBanner
-            priority="critical"
-            title={`${stats.rejected} Issue${stats.rejected > 1 ? "s" : ""} Need Attention`}
-            description="Rejected records require immediate review before your next audit."
-            action={{ label: `Fix ${stats.rejected} Issue${stats.rejected > 1 ? "s" : ""}`, onClick: () => setActiveTab("issues") }}
-          />
-        ) : stats.pending > 0 ? (
-          <DecisionBanner
-            priority="info"
-            title={`${stats.pending} Record${stats.pending > 1 ? "s" : ""} Pending Review`}
-            description="Approve pending records to maintain compliance status."
-            action={{ label: `Review ${stats.pending} Pending`, onClick: () => setActiveTab("pending") }}
-          />
-        ) : stats.total > 0 && stats.approved === stats.total ? (
-          <DecisionBanner
-            priority="success"
-            title="All Records Compliant"
-            description="No outstanding actions needed for this project."
-          />
-        ) : null}
-
-        <StatsRow stats={[
-          { icon: FolderOpen, value: stats.total, label: "Total Files", variant: "default" },
-          { icon: CheckCircle2, value: stats.approved, label: "Approved", variant: "success" },
-          { icon: Clock, value: stats.pending, label: "Pending", variant: "warning" },
-          { icon: AlertCircle, value: stats.rejected, label: "Issues", variant: "destructive" },
-        ]} />
-
-        {/* Overall Progress Bar */}
-        {stats.total > 0 && (
-          <div className="bg-card rounded-sm border border-border/50 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Overall Compliance</span>
-              <span className="text-sm font-black text-foreground">{Math.round((stats.approved / stats.total) * 100)}%</span>
-            </div>
-            <div className="w-full bg-muted/30 rounded-sm h-2.5 overflow-hidden">
-              <div className={cn(
-                "h-2.5 rounded-sm transition-all duration-700",
-                (stats.approved / stats.total) > 0.7 ? "bg-success" : (stats.approved / stats.total) > 0.3 ? "bg-primary" : "bg-warning"
-              )} style={{ width: `${Math.round((stats.approved / stats.total) * 100)}%` }} />
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-6">
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+    <AppShell 
+      breadcrumbs={[
+        { label: "Dashboard", path: "/" }, 
+        { label: "Projects", path: "/projects" }, 
+        { label: project.name }
+      ]}
+    >
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs h-9"
-              onClick={() => navigate(`/audit?project=${encodeURIComponent(decodedProject)}&tab=pending`)}
+              size="icon"
+              onClick={() => navigate("/projects")}
+              className="shrink-0"
             >
-              <CheckCircle className="w-3.5 h-3.5" />
-              Open in Audit
+              <ArrowLeft className="w-4 h-4" />
             </Button>
+            
+            <div
+            >
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
+                <span className={cn("px-2.5 py-1 text-xs font-medium rounded-full flex items-center gap-1", status.color)}>
+                  <StatusIcon className="w-3.5 h-3.5" />
+                  {status.label}
+                </span>
+              </div>
+              <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">{project.code}</span>
+                <span>{project.type}</span>
+              </div>
+            </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-                <TabsList className="bg-muted/50 p-1 rounded-sm h-11 border border-border/40">
-                  <TabsTrigger value="all" className="rounded-sm font-bold px-6">All</TabsTrigger>
-                  <TabsTrigger value="pending" className="rounded-sm font-bold px-6">Pending</TabsTrigger>
-                  <TabsTrigger value="compliant" className="rounded-sm font-bold px-6 text-success data-[state=active]:bg-success data-[state=active]:text-success-foreground">Compliant</TabsTrigger>
-                  <TabsTrigger value="issues" className="rounded-sm font-bold px-6 text-destructive data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">Issues</TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search records..."
-                  className="pl-10 h-11 bg-card border-border/50 rounded-sm shadow-inner font-medium"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-           </div>
-
-           <div className="ds-card-elevated rounded-sm p-4 md:p-8 min-h-[400px]">
-              {isError ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Failed to load project data</h3>
-                    <p className="text-muted-foreground text-sm mb-4">{error?.message || "An error occurred while fetching data."}</p>
-                    <Button variant="outline" onClick={() => refetch()}><RefreshCw className="w-4 h-4 mr-2" />Try Again</Button>
-                  </div>
-              ) : isLoading ? (
-                  <div className="flex items-center justify-center h-full py-20">
-                      <Clock className="w-10 h-10 animate-spin text-primary/30" />
-                  </div>
-              ) : filteredRecords.length > 0 ? (
-                  <RecordsTable
-                      records={filteredRecords}
-                      variant={viewMode === "card" ? "default" : "compact"}
-                  />
-              ) : (
-                  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                      <div className="w-20 h-20 bg-muted/50 rounded-sm flex items-center justify-center">
-                          <FileText className="w-10 h-10 text-muted-foreground/30" />
-                      </div>
-                      <div>
-                          <h3 className="text-xl font-bold">No records found</h3>
-                          <p className="text-muted-foreground">No records match your current filter or search criteria for this project.</p>
-                      </div>
-                  </div>
-              )}
-           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleEdit} className="gap-2">
+              <Edit className="w-4 h-4" />
+              Edit
+            </Button>
+            <Button variant="destructive" onClick={() => setDeleteDialog(true)} className="gap-2">
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </Button>
+          </div>
         </div>
+
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase">Client</p>
+                <p className="font-semibold">{project.client}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Users className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase">Team Size</p>
+                <p className="font-semibold">{project.teamSize} members</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-gray-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase">Duration</p>
+                <p className="font-semibold">
+                  {project.startDate 
+                    ? new Date(project.startDate).toLocaleDateString() 
+                    : "N/A"} - {project.endDate 
+                      ? new Date(project.endDate).toLocaleDateString() 
+                      : "Present"}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Description */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-3">Description</h3>
+          <p className="text-gray-700 whitespace-pre-wrap">{project.description}</p>
+          
+          {project.descriptionAr && (
+            <>
+              <Separator className="my-4" />
+              <p className="text-gray-700 whitespace-pre-wrap" dir="rtl">{project.descriptionAr}</p>
+            </>
+          )}
+        </Card>
+
+        {/* Team */}
+        <Card className="p-6">
+          <TeamSection team={project.team} />
+        </Card>
+
+        {/* QMS Records */}
+        <Card className="p-6">
+          <QMSRecordsSection 
+            f19Record={project.f19Record}
+            f28Records={project.f28Records}
+            agents={project.agents}
+          />
+        </Card>
+
+        {/* Metadata */}
+        <Card className="p-6 bg-gray-50">
+          <p className="text-xs text-gray-500">
+            <span className="font-medium">Created:</span> {project.createdAt || "N/A"} {
+              " "}<span className="font-medium">| Last Updated:</span> {project.updatedAt || "N/A"}
+          </p>
+        </Card>
+
+        {/* Delete Dialog */}
+        <Dialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-red-600">Delete Project?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <strong>{project.name}</strong>? 
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button variant="outline" onClick={() => setDeleteDialog(false)}>Cancel</Button>
+              <Button variant="destructive" onClick={handleDelete}>Delete Project</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppShell>
   );
