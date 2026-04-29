@@ -19,6 +19,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import { QMSRecord, RecordStatus, updateSheetCell } from "@/lib/googleSheets";
+import { getAllProjects } from "@/data/projectsData";
 import { Settings, Loader2, Save, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,12 +55,7 @@ export function EditMetadataModal({ isOpen, onClose, record, fileId, fileName, o
     const [isSaving, setIsSaving] = useState(false);
     const PROJECTS = [
         "General / All Company",
-        "Omniaz Project - Mapping",
-        "Omniaz Project - Annotation",
-        "Video Detection Project",
-        "Vocal AI Project",
-        "Tennis Project",
-        "ETH Project"
+        ...getAllProjects().map(p => p.name)
     ];
     
     const MONTHS = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
