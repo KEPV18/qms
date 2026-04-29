@@ -15,7 +15,15 @@ import {
   Edit,
   Trash2,
   ExternalLink,
-  MoreVertical
+  MoreVertical,
+  Video,
+  Mic,
+  Trophy,
+  MapPin,
+  BrainCircuit,
+  Zap,
+  Cpu,
+  Film
 } from "lucide-react";
 import { 
   useProjects, 
@@ -50,6 +58,85 @@ import { AppShell } from "@/components/layout/AppShell";
 import { cn } from "@/lib/utils";
 
 // ============================================================================
+// Project Theme — unique color & icon per project
+// ============================================================================
+const PROJECT_THEMES: Record<string, { icon: any; accent: string; bg: string; border: string; badge: string; gradient: string }> = {
+  "VDP-001": { 
+    icon: Video, 
+    accent: "text-violet-600 dark:text-violet-400", 
+    bg: "bg-violet-100 dark:bg-violet-900/40",
+    border: "border-violet-400/30 dark:border-violet-600/30",
+    badge: "bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400",
+    gradient: "from-violet-500 to-purple-600"
+  },
+  "VAI-002": { 
+    icon: Mic, 
+    accent: "text-rose-600 dark:text-rose-400", 
+    bg: "bg-rose-100 dark:bg-rose-900/40",
+    border: "border-rose-400/30 dark:border-rose-600/30",
+    badge: "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400",
+    gradient: "from-rose-500 to-pink-600"
+  },
+  "TSA-003": { 
+    icon: Trophy, 
+    accent: "text-amber-600 dark:text-amber-400", 
+    bg: "bg-amber-100 dark:bg-amber-900/40",
+    border: "border-amber-400/30 dark:border-amber-600/30",
+    badge: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+    gradient: "from-amber-500 to-orange-600"
+  },
+  "OMN-004": { 
+    icon: MapPin, 
+    accent: "text-teal-600 dark:text-teal-400", 
+    bg: "bg-teal-100 dark:bg-teal-900/40",
+    border: "border-teal-400/30 dark:border-teal-600/30",
+    badge: "bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400",
+    gradient: "from-teal-500 to-cyan-600"
+  },
+  "ETH-005": { 
+    icon: BrainCircuit, 
+    accent: "text-indigo-600 dark:text-indigo-400", 
+    bg: "bg-indigo-100 dark:bg-indigo-900/40",
+    border: "border-indigo-400/30 dark:border-indigo-600/30",
+    badge: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
+    gradient: "from-indigo-500 to-blue-600"
+  },
+  "BTF-006": { 
+    icon: Zap, 
+    accent: "text-emerald-600 dark:text-emerald-400", 
+    bg: "bg-emerald-100 dark:bg-emerald-900/40",
+    border: "border-emerald-400/30 dark:border-emerald-600/30",
+    badge: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+    gradient: "from-emerald-500 to-green-600"
+  },
+  "ETH2-007": { 
+    icon: Cpu, 
+    accent: "text-sky-600 dark:text-sky-400", 
+    bg: "bg-sky-100 dark:bg-sky-900/40",
+    border: "border-sky-400/30 dark:border-sky-600/30",
+    badge: "bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400",
+    gradient: "from-sky-500 to-blue-600"
+  },
+  "ETC-008": { 
+    icon: Film, 
+    accent: "text-fuchsia-600 dark:text-fuchsia-400", 
+    bg: "bg-fuchsia-100 dark:bg-fuchsia-900/40",
+    border: "border-fuchsia-400/30 dark:border-fuchsia-600/30",
+    badge: "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-400",
+    gradient: "from-fuchsia-500 to-pink-600"
+  },
+};
+
+const DEFAULT_THEME = { 
+  icon: Briefcase, 
+  accent: "text-gray-600 dark:text-gray-400", 
+  bg: "bg-gray-100 dark:bg-gray-800",
+  border: "border-gray-300 dark:border-gray-600",
+  badge: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400",
+  gradient: "from-gray-500 to-gray-600"
+};
+
+// ============================================================================
 // Project Card Component
 // ============================================================================
 interface ProjectCardProps {
@@ -62,6 +149,9 @@ interface ProjectCardProps {
 function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
   const isActive = project.status === "active";
   const isCompleted = project.status === "completed";
+
+  const theme = PROJECT_THEMES[project.id] || DEFAULT_THEME;
+  const ProjectIcon = theme.icon;
 
   const statusConfig = {
     active: { 
@@ -91,17 +181,19 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
     <Card className={cn(
       "group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
       "border bg-card",
-      isActive && "border-emerald-400/30 dark:border-emerald-600/30",
-      isCompleted && "border-blue-400/30 dark:border-blue-600/30"
+      theme.border
     )}>
+      {/* Accent bar */}
+      <div className={cn("h-1.5 w-full bg-gradient-to-r", theme.gradient)} />
+      
       {/* Header */}
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div className={cn(
-            "w-10 h-10 rounded-lg flex items-center justify-center",
-            isActive ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400" : "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
+            "w-11 h-11 rounded-xl flex items-center justify-center shadow-sm",
+            theme.bg, theme.accent
           )}>
-            <Briefcase className="w-5 h-5" />
+            <ProjectIcon className="w-5 h-5" />
           </div>
           
           <DropdownMenu>
@@ -128,11 +220,11 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
         </div>
 
         {/* Title */}
-        <h3 className="mt-3 text-lg font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+        <h3 className={cn("mt-3 text-lg font-semibold text-foreground transition-colors", theme.accent)}>
           {project.name}
         </h3>
         <div className="flex items-center gap-1.5 mt-1">
-          <Badge variant="secondary" className="text-[10px] font-mono tracking-wider px-1.5 py-0 h-5">
+          <Badge variant="secondary" className={cn("text-[10px] font-mono tracking-wider px-1.5 py-0 h-5", theme.badge)}>
             {project.id}
           </Badge>
           <span className="text-xs text-muted-foreground">·</span>
@@ -192,7 +284,7 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
         <div className="mt-5 flex gap-2">
           <Button 
             onClick={onView}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white"
+            className={cn("flex-1 text-white bg-gradient-to-r", theme.gradient, "hover:opacity-90")}
             size="sm"
           >
             View Details

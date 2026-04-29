@@ -15,6 +15,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProceduresData } from "@/hooks/useProceduresData";
+import { useQMSData } from "@/hooks/useQMSData";
+import { getRecordsForProcedure } from "@/lib/procedureRecordMapping";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -101,6 +104,10 @@ export default function ProceduresPage() {
   const [folderStack, setFolderStack] = useState<{ id: string; name: string }[]>([
     { id: PROCEDURES_FOLDER_ID, name: "02. Procedures" }
   ]);
+
+  // QMS Records for Procedure → Record linking
+  const { data: qmsRecords } = useQMSData();
+  const navigate = useNavigate();
 
   // Scroll-to-top visibility
   useEffect(() => {
