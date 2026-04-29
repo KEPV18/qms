@@ -121,7 +121,6 @@ export default function ProjectFormPage() {
     licensing: "",
     intendedUse: "",
     regulatoryRequirements: "",
-    f19Record: "",
     agents: [],
   });
 
@@ -436,30 +435,7 @@ export default function ProjectFormPage() {
               {/* QMS Records */}
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-4">QMS Records Links</h2>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="f19Record">F/19 Product Description</Label>
-                    <Input
-                      id="f19Record"
-                      value={formData.f19Record || ""}
-                      onChange={(e) => updateField("f19Record", e.target.value)}
-                      placeholder="e.g., F/19-001"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="agents">Assigned Agent IDs (comma-separated)</Label>
-                    <Input
-                      id="agents"
-                      value={typeof formData.agents === "string"
-                        ? formData.agents
-                        : formData.agents?.join(", ") || ""}
-                      onChange={(e) => updateField("agents", e.target.value)}
-                      placeholder="e.g., VIZ-001, VIZ-002, VIZ-003"
-                    />
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground italic">Records will be linked dynamically based on project name</p>
               </Card>
             </div>
           </div>

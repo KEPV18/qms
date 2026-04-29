@@ -62,8 +62,7 @@ function TeamSection({ team }: { team: Project["team"] }) {
 // ============================================================================
 // QMS Records Section
 // ============================================================================
-function QMSRecordsSection({ f19Record, agents }: { 
-  f19Record?: string; 
+function QMSRecordsSection({ agents }: { 
   agents?: string[];
 }) {
   return (
@@ -76,19 +75,7 @@ function QMSRecordsSection({ f19Record, agents }: {
       <div className="grid grid-cols-1 gap-4">
         <Card className="p-4 border bg-card">
           <p className="text-xs font-medium text-muted-foreground uppercase mb-3">Product Description</p>
-          {f19Record ? (
-            <a 
-              href={`https://drive.google.com/drive/search?q=${f19Record}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
-            >
-              <Tag className="w-4 h-4" />
-              {f19Record}
-            </a>
-          ) : (
-            <p className="text-muted-foreground/60 italic text-sm">No F-19 record linked</p>
-          )}
+          <p className="text-muted-foreground/60 italic text-sm">Linked via project name</p>
         </Card>
       </div>
 
@@ -367,10 +354,7 @@ export default function ProjectDetailPage() {
 
             {/* QMS Records */}
             <Card className="p-6 border bg-card">
-              <QMSRecordsSection 
-                f19Record={project.f19Record} 
-                agents={project.agents}
-              />
+              <QMSRecordsSection agents={project.agents} />
             </Card>
           </>
         )}

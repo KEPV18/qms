@@ -263,18 +263,6 @@ function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardProps) {
           </div>
         </div>
 
-        {/* QMS Records */}
-        <div className="mt-4">
-          <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider mb-2">QMS Records</p>
-          <div className="flex flex-wrap gap-1.5">
-            {project.f19Record && (
-              <Badge variant="outline" className="text-xs bg-muted/40">
-                {project.f19Record}
-              </Badge>
-            )}
-          </div>
-        </div>
-
         {/* Actions */}
         <div className="mt-5 flex gap-2">
           <Button 
