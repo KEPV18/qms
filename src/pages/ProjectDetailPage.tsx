@@ -284,14 +284,70 @@ export default function ProjectDetailPage() {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-3">Description</h3>
           <p className="text-gray-700 whitespace-pre-wrap">{project.description}</p>
-          
-          {project.descriptionAr && (
-            <>
-              <Separator className="my-4" />
-              <p className="text-gray-700 whitespace-pre-wrap" dir="rtl">{project.descriptionAr}</p>
-            </>
-          )}
         </Card>
+
+        {/* F/19 Details */}
+        {(project.composition || project.endProduct || project.methodOfPrevention || project.storageCondition || project.distributionMethod || project.supportPeriod || project.licensing || project.intendedUse || project.regulatoryRequirements) && (
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Product Description (F/19)</h3>
+            <div className="space-y-4">
+              {project.composition && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Composition</p>
+                  <p className="text-gray-700">{project.composition}</p>
+                </div>
+              )}
+              {project.endProduct && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">End Product</p>
+                  <p className="text-gray-700">{project.endProduct}</p>
+                </div>
+              )}
+              {project.methodOfPrevention && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Method of Prevention</p>
+                  <p className="text-gray-700">{project.methodOfPrevention}</p>
+                </div>
+              )}
+              {project.storageCondition && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Storage Condition</p>
+                  <p className="text-gray-700">{project.storageCondition}</p>
+                </div>
+              )}
+              {project.distributionMethod && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Distribution Method</p>
+                  <p className="text-gray-700">{project.distributionMethod}</p>
+                </div>
+              )}
+              {project.supportPeriod && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Support & Update Period</p>
+                  <p className="text-gray-700">{project.supportPeriod}</p>
+                </div>
+              )}
+              {project.licensing && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Licensing & Legal</p>
+                  <p className="text-gray-700">{project.licensing}</p>
+                </div>
+              )}
+              {project.intendedUse && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Intended Use</p>
+                  <p className="text-gray-700">{project.intendedUse}</p>
+                </div>
+              )}
+              {project.regulatoryRequirements && (
+                <div>
+                  <p className="text-xs text-gray-500 uppercase mb-1">Regulatory Requirements</p>
+                  <p className="text-gray-700">{project.regulatoryRequirements}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* Team */}
         <Card className="p-6">

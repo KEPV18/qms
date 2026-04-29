@@ -15,9 +15,7 @@ export interface Project {
   projectCode: string;
   serialNumber: string;
   name: string;
-  nameAr?: string;
   type: string;
-  typeAr: string;
   client: string;
   status: "active" | "completed" | "pending";
   startDate?: string;
@@ -25,7 +23,15 @@ export interface Project {
   teamSize: number;
   team: TeamMember[];
   description: string;
-  descriptionAr: string;
+  composition?: string;
+  endProduct?: string;
+  methodOfPrevention?: string;
+  storageCondition?: string;
+  distributionMethod?: string;
+  supportPeriod?: string;
+  licensing?: string;
+  intendedUse?: string;
+  regulatoryRequirements?: string;
   f19Record?: string;
   f28Records?: string[];
   agents?: string[];
@@ -41,20 +47,27 @@ const INITIAL_PROJECTS: Project[] = [
     projectCode: "VDP",
     serialNumber: "001",
     name: "Video Detection Project",
-    nameAr: "مشروع كشف الفيديو",
     type: "Video Classification & Detection",
-    typeAr: "تصنيف وكشف الفيديو",
     client: "External Client",
     status: "active",
+    startDate: "2026-01-15",
     teamSize: 12,
     team: [
       { role: "Annotation Agents", count: 8 },
       { role: "Team Leaders", count: 2 },
-      { role: "QA Specialists", count: 2 }
+      { role: "Quality Analysts", count: 2 }
     ],
-    description: "AI-powered video classification and object detection annotation for machine learning model training.",
-    descriptionAr: "تعليقات تصنيف الفيديو والكشف عن الأجسام المدعومة بالذكاء الاصطناعي لتدريب نماذج التعلم الآلي.",
-    f19Record: "F/19-004",
+    description: "AI-powered video classification and object detection project. Agents review and label video content, classify objects and events based on defined categories, and produce QA-validated outputs delivered through the client platform. Videos are stored on a client-secured platform with no local storage permitted. Intended for AI model training and improvement.",
+    composition: "Agents, Team Leaders, Quality Analysts, Client Detection Platform, Approved Guidelines & SOPs",
+    endProduct: "Reviewed and labeled videos, Detection results based on defined categories, QA-validated outputs delivered through client platform",
+    methodOfPrevention: "Initial training before task assignment, Clear detection and classification guidelines, Random sampling and QA checks, Feedback and corrective actions when needed",
+    storageCondition: "Videos stored on client-secured platform, Access limited to authorized project team only, No local storage or downloads",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Continuous updates implemented based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training and improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-001",
     f28Records: ["F/28-001"],
     createdAt: "2026-01-15",
     updatedAt: "2026-04-20"
@@ -65,21 +78,28 @@ const INITIAL_PROJECTS: Project[] = [
     projectCode: "VAI",
     serialNumber: "002",
     name: "Vocal AI Project",
-    nameAr: "مشروع الذكاء الاصطناعي الصوتي",
-    type: "Conversational AI Design & Testing",
-    typeAr: "تصميم واختبار الذكاء الاصطناعي التفاعلي",
+    type: "Conversational AI Design, Testing & Optimization",
     client: "Internal R&D",
     status: "active",
+    startDate: "2026-01-20",
     teamSize: 8,
     team: [
-      { role: "Senior AI Designers", count: 4 },
-      { role: "Junior AI Designers", count: 2 },
-      { role: "QC Specialists", count: 1 },
+      { role: "Senior AI Operators", count: 4 },
+      { role: "Junior AI Operators", count: 2 },
+      { role: "QC Specialist", count: 1 },
       { role: "Team Leader", count: 1 }
     ],
-    description: "Design and testing of conversational AI systems with natural language processing capabilities.",
-    descriptionAr: "تصميم واختبار أنظمة الذكاء الاصطناعي التفاعلي مع قدرات معالجة اللغة الطبيعية.",
-    f19Record: "F/19-005",
+    description: "Design, testing, and optimization of conversational AI systems with natural language processing capabilities. The team designs conversational flows, tests AI assistant performance, validates scenarios through QA, and delivers client-ready AI deployment support. Audio files are stored on a client-secured platform with strict access controls. Intended for conversational AI optimization, assistant performance improvement, and model training support.",
+    composition: "7 Team Members (4 Senior AOs, 2 Junior AOs, 1 QC), 1 Team Leader, Client Conversational Platform, Approved Guidelines & SOPs",
+    endProduct: "Designed and optimized conversational flows, Tested and validated AI assistant performance, Documented and QA-approved conversational scenarios, Client-ready AI deployment support",
+    methodOfPrevention: "Initial training before task assignment, Clear conversational design and testing guidelines, Random sampling and QA checks, Continuous feedback and corrective actions, Structured QC reporting system, Escalation workflow for undetected issues, Team Leader review for quality gaps",
+    storageCondition: "Audio files stored on client-secured platform, Access restricted to authorized project team only, No local storage or downloads",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Continuous updates based on client feedback, Ongoing operational support during project lifecycle, Continuous performance monitoring",
+    licensing: "NDA signed with the client, All audio data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "Conversational AI optimization, assistant performance improvement, and model training support",
+    regulatoryRequirements: "Client Data Privacy Policies, Confidentiality Agreements, Internal SOP Compliance, ISO 9001 Quality Framework",
+    f19Record: "F/19-002",
     f28Records: ["F/28-002"],
     createdAt: "2026-01-20",
     updatedAt: "2026-04-20"
@@ -89,20 +109,28 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-003",
     projectCode: "TSA",
     serialNumber: "003",
-    name: "Tennis / Sports Analytics",
-    nameAr: "تحليلات التنس / الرياضة",
-    type: "Sports Data Analysis & Tagging",
-    typeAr: "تحليل بيانات الرياضة ووسمها",
+    name: "Tennis / Sports Analytics Project",
+    type: "Sports Data Analysis, Match Review & Performance Tagging",
     client: "Sports Analytics Company",
     status: "active",
+    startDate: "2026-02-01",
     teamSize: 6,
     team: [
-      { role: "Sports Analysts", count: 4 },
-      { role: "QA Specialists", count: 2 }
+      { role: "Sports Analytics Agents", count: 3 },
+      { role: "Tennis Analysts", count: 2 },
+      { role: "Quality Analysts", count: 1 }
     ],
-    description: "Sports event data annotation and player movement tracking for tennis match analysis.",
-    descriptionAr: "تعليقات بيانات الأحداث الرياضية وتتبع حركات اللاعبين لتحليل مباريات التنس.",
-    f19Record: "F/19-006",
+    description: "Comprehensive sports data analysis and match review project focused on tennis. Agents analyze match videos, tag performance events, classify player actions, and produce QA-validated analytics outputs. Match videos and analytics data are stored on a client-secured platform. Intended for sports performance analysis, player and match analytics, and AI/predictive sports models training.",
+    composition: "Sports Analytics Agents, Tennis Analysts, Team Leaders, Quality Analysts, Sports Analytics Platform / Client Platform",
+    endProduct: "Analyzed and tagged tennis match data, Performance metrics and event classifications, Accurate and QA-validated sports analytics outputs",
+    methodOfPrevention: "Initial training on tennis rules and analytics criteria, Clear analysis and tagging guidelines, Random sampling and QA checks, Feedback and corrective actions when needed",
+    storageCondition: "Match videos and analytics data stored on client-secured platform, Access limited to authorized analysts only, No local storage",
+    distributionMethod: "Results submitted through client analytics platform, Secure system-based data delivery",
+    supportPeriod: "Continuous updates based on client feedback, Ongoing analytical support during project lifecycle, Periodic recalibration sessions",
+    licensing: "NDA signed with the client, All sports data, videos, and analytics outputs are client-owned, Internal use only for project execution",
+    intendedUse: "Sports performance analysis, Player and match analytics, AI and predictive sports models training",
+    regulatoryRequirements: "Client data protection policies, Internal quality and validation procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-003",
     f28Records: ["F/28-003"],
     createdAt: "2026-02-01",
     updatedAt: "2026-04-15"
@@ -112,20 +140,28 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-004",
     projectCode: "OMN",
     serialNumber: "004",
-    name: "OMNIAZ",
-    nameAr: "أومنياz",
+    name: "OMNIAZ — Annotation & Store Miner Project",
     type: "Data Annotation + Store Miner & Mapping",
-    typeAr: "تعليق البيانات + تعدين وتعيين المتاجر",
     client: "OMNIAZ Platform",
     status: "active",
+    startDate: "2026-02-10",
     teamSize: 12,
     team: [
-      { role: "Annotation Agents", count: 10 },
+      { role: "Annotation Agents", count: 4 },
+      { role: "Store Miner Agents", count: 6 },
       { role: "Reviewers", count: 2 }
     ],
-    description: "Comprehensive data annotation and store location mapping for retail intelligence platform.",
-    descriptionAr: "تعليق شامل للبيانات وتعيين مواقع المتاجر لمنصة ذكاء التجزئة.",
-    f19Record: "F/19-007",
+    description: "Comprehensive data annotation and store location mapping project for the OMNIAZ retail intelligence platform. The team performs accurate data annotation tasks and validates store mapping data. Daily continuous review with instant correction upon detection ensures quality. Data is managed and stored on the client platform with direct submission through the client system.",
+    composition: "10 Agents (4 Annotation + 6 Store Miner) + 2 Reviewers",
+    endProduct: "Accurately annotated tasks and validated store mapping data",
+    methodOfPrevention: "Daily continuous review + instant correction upon detection",
+    storageCondition: "Data managed and stored on client platform",
+    distributionMethod: "Direct submission through client system",
+    supportPeriod: "Updates implemented based on client new requirements",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "Retail intelligence platform data enrichment and store location mapping",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-004",
     f28Records: ["F/28-004"],
     createdAt: "2026-02-10",
     updatedAt: "2026-04-18"
@@ -135,10 +171,8 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-005",
     projectCode: "ETH",
     serialNumber: "005",
-    name: "ETH – AI Model Testing",
-    nameAr: "ETH - اختبار نماذج الذكاء الاصطناعي",
+    name: "ETH — AI Model Testing Project",
     type: "AI Output Evaluation & Validation",
-    typeAr: "تقييم والتحقق من مخرجات الذكاء الاصطناعي",
     client: "ETH / Adam",
     status: "completed",
     startDate: "2026-02-28",
@@ -148,12 +182,20 @@ const INITIAL_PROJECTS: Project[] = [
       { role: "Annotation Agents", count: 25 },
       { role: "Auditors", count: 4 }
     ],
-    description: "AI model output evaluation and validation with comprehensive feedback loops.",
-    descriptionAr: "تقييم مخرجات نماذج الذكاء الاصطناعي والتحقق منها مع حلقات feedback شاملة.",
-    f19Record: "F/19-002",
+    description: "AI model output evaluation and validation project. A large team of 25 agents evaluates AI-generated outputs against defined criteria, with 4 auditors providing quality oversight. Results are reviewed through random sampling and QA checks with corrective actions. All data and outputs are client-owned under NDA. Intended for AI model training, fine-tuning, and performance improvement.",
+    composition: "25 Annotation Agents, 4 Auditors, Team Leader, Client AI Platform, Approved Evaluation Guidelines & SOPs",
+    endProduct: "Evaluated and validated AI model outputs, Annotated feedback on model performance, QA-validated results delivered through client platform",
+    methodOfPrevention: "Initial training on evaluation criteria, Clear validation and annotation guidelines, Random sampling and QA checks, Feedback and corrective actions, Structured QC reporting",
+    storageCondition: "AI outputs and evaluation data stored on client-secured platform, Access limited to authorized project team only",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Continuous updates based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training, fine-tuning, and performance improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-005",
     f28Records: ["F/28-010"],
-    agents: ["VIZ-001", "VIZ-002", "VIZ-003", "VIZ-004", "VIZ-005", "VIZ-006", "VIZ-007", 
-             "VIZ-008", "VIZ-009", "VIZ-010", "VIZ-011", "VIZ-012", "VIZ-013", "VIZ-014", "VIZ-015", "VIZ-016"],
+    agents: ["VIZ-001", "VIZ-002", "VIZ-003", "VIZ-004", "VIZ-005", "VIZ-006", "VIZ-007",
+              "VIZ-008", "VIZ-009", "VIZ-010", "VIZ-011", "VIZ-012", "VIZ-013", "VIZ-014", "VIZ-015", "VIZ-016"],
     createdAt: "2026-02-01",
     updatedAt: "2026-03-05"
   },
@@ -162,22 +204,27 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-006",
     projectCode: "BTF",
     serialNumber: "006",
-    name: "BatFast",
-    nameAr: "باتفاست",
-    type: "Image/Video Annotation",
-    typeAr: "تعليق الصور والفيديو",
+    name: "BatFast Project",
+    type: "Image Annotation",
     client: "BatFast",
     status: "completed",
     startDate: "2026-02-01",
     endDate: "2026-02-17",
-    teamSize: 7,
+    teamSize: 5,
     team: [
-      { role: "Annotation Team", count: 5 },
-      { role: "QA Specialists", count: 2 }
+      { role: "Annotation Agents", count: 5 }
     ],
-    description: "Image and video annotation for sports analytics and player tracking applications.",
-    descriptionAr: "تعليق الصور والفيديو لتطبيقات تحليلات الرياضة وتتبع اللاعبين.",
-    f19Record: "F/19-001",
+    description: "Image annotation project for the BatFast platform. Five annotation agents label and annotate images according to defined guidelines, with quality assurance through random sampling and corrective feedback loops. All data and outputs are client-owned under NDA. Intended for AI model training and image recognition improvement.",
+    composition: "5 Annotation Agents, Team Leader, Client Annotation Platform, Approved Guidelines & SOPs",
+    endProduct: "Accurately labeled and annotated images, QA-validated image datasets, Results delivered through client platform",
+    methodOfPrevention: "Initial training on annotation criteria, Clear annotation guidelines, Random sampling and QA checks, Feedback and corrective actions",
+    storageCondition: "Images stored on client-secured platform, Access limited to authorized project team only",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Updates based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training and image recognition improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-006",
     f28Records: ["F/28-009"],
     agents: ["VIZ-001", "VIZ-002", "VIZ-003", "VIZ-004", "VIZ-005"],
     createdAt: "2026-01-25",
@@ -188,10 +235,8 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-007",
     projectCode: "ETH2",
     serialNumber: "007",
-    name: "ETH — AI Model Testing (Copy 2)",
-    nameAr: "ETH - اختبار نماذج الذكاء الاصطناعي (نسخة 2)",
+    name: "ETH — AI Model Testing Project (Batch 2)",
     type: "AI Model Output Validation",
-    typeAr: "التحقق من مخرجات نماذج الذكاء الاصطناعي",
     client: "ETH / Adam",
     status: "completed",
     startDate: "2026-02-28",
@@ -200,11 +245,19 @@ const INITIAL_PROJECTS: Project[] = [
     team: [
       { role: "Annotation Agents", count: 12 },
       { role: "Team Leaders", count: 2 },
-      { role: "QA Specialists", count: 1 }
+      { role: "QA Specialist", count: 1 }
     ],
-    description: "Secondary batch of AI model validation with extended testing protocols.",
-    descriptionAr: "دفعة ثانوية من التحقق من نماذج الذكاء الاصطناعي مع بروتوكولات اختبار موسعة.",
-    f19Record: "F/19-003",
+    description: "Second batch of AI model output evaluation and validation for the ETH project. A team of 12 annotation agents with 2 team leaders and 1 QA specialist evaluates AI-generated outputs against defined criteria. Quality is ensured through structured QC reporting, random sampling, and corrective feedback. Intended for AI model training, fine-tuning, and performance improvement.",
+    composition: "12 Annotation Agents, 2 Team Leaders, 1 QA Specialist, Client AI Platform, Approved Evaluation Guidelines & SOPs",
+    endProduct: "Evaluated and validated AI model outputs, Annotated feedback on model performance, QA-validated results delivered through client platform",
+    methodOfPrevention: "Initial training on evaluation criteria, Clear validation guidelines, Random sampling and QA checks, Structured QC reporting, Corrective actions and feedback loops",
+    storageCondition: "AI outputs and evaluation data stored on client-secured platform, Access limited to authorized project team only",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Continuous updates based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training, fine-tuning, and performance improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    f19Record: "F/19-007",
     f28Records: ["F/28-011", "F/28-012"],
     createdAt: "2026-02-15",
     updatedAt: "2026-03-05"
@@ -214,10 +267,8 @@ const INITIAL_PROJECTS: Project[] = [
     code: "PROJ-008",
     projectCode: "ETC",
     serialNumber: "008",
-    name: "ETH-Cedric",
-    nameAr: "ETH-سيدريك",
+    name: "ETH-Cedric — Video Annotation Project",
     type: "Video Annotation & Quality Review",
-    typeAr: "تعليق الفيديو ومراجعة الجودة",
     client: "Cedric",
     status: "completed",
     startDate: "2026-02-25",
@@ -225,11 +276,19 @@ const INITIAL_PROJECTS: Project[] = [
     teamSize: 8,
     team: [
       { role: "Annotation Agents", count: 6 },
-      { role: "Team Leaders", count: 1 },
-      { role: "QA Specialists", count: 1 }
+      { role: "Team Leader", count: 1 },
+      { role: "QA Specialist", count: 1 }
     ],
-    description: "Video annotation and quality review for AI training datasets with rigorous validation.",
-    descriptionAr: "تعليق الفيديو ومراجعة الجودة لمجموعات بيانات تدريب الذكاء الاصطناعي مع تحقق صارم.",
+    description: "Video annotation and quality review project for ETH-Cedric. A team of 6 annotation agents, 1 team leader, and 1 QA specialist annotates video content according to defined guidelines with rigorous validation. Quality is ensured through random sampling, QC reporting, and corrective actions. Intended for AI model training, fine-tuning, and video recognition improvement.",
+    composition: "6 Annotation Agents, 1 Team Leader, 1 QA Specialist, Client Video Platform, Approved Annotation Guidelines & SOPs",
+    endProduct: "Accurately annotated video datasets, QA-validated video annotations, Results delivered through client platform",
+    methodOfPrevention: "Initial training on video annotation criteria, Clear annotation and review guidelines, Random sampling and QA checks, Feedback and corrective actions",
+    storageCondition: "Videos stored on client-secured platform, Access limited to authorized project team only, No local storage or downloads",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Updates implemented based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training, fine-tuning, and video recognition improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
     f19Record: "F/19-008",
     f28Records: ["F/28-011", "F/28-012"],
     agents: ["VIZ-001", "VIZ-003", "VIZ-013", "VIZ-017", "VIZ-018", "VIZ-019"],
