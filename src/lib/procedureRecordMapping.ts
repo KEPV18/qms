@@ -4,7 +4,7 @@
 // using keyword matching against record name & description.
 // ============================================================================
 
-import { type QMSRecord } from "@/lib/googleSheets";
+import { type QMSRecord, type RecordStatus } from "@/lib/googleSheets";
 import { PROCEDURES_CONTENT, type ProcedureSection } from "@/lib/ProceduresContent";
 
 /**
@@ -121,4 +121,68 @@ export function buildProcedureLookup(
     }
   }
   return map;
+}
+
+// ============================================================================
+// Project ↔ Record Mapping
+// Matches records to projects via the "project" field stored in fileReviews
+// (set via EditMetadataModal's Project Assignment dropdown).
+// ============================================================================
+
+/**
+ * Get all QMS records that have at least one file assigned to a given project name.
+ * Checks each record's fileReviews for entries where project === projectName.
+ *
+ * Returns records with a resolvedFile info array containing:
+ *   - fileId, fileName, status, reviewDate, reviewedBy, category, whenToFill
+ */
+export interface ProjectRecordEntry {
+  record: QMSRecord;
+  files: Array<{
+    fileId: string;
+    project: string;
+    status: RecordStatus;
+    reviewDate?: string;
+    reviewedBy?: string;
+    identifiedErrors?: string;
+    errorsFixed?: boolean;
+  }>;
+}
+
+/**
+ * Get all records linked to a project via their fileReviews metadata.
+ * The "project" field is set per-file in EditMetadataModal.
+ */
+export function getRecordsForProject(
+  projectName: string,
+  records: QMSRecord[],
+): ProjectRecordEntry[] {
+  const result: ProjectRecordEntry[] = [];
+
+  for (const record of records) {
+    const reviews = record.fileReviews || {};
+    const matchedFiles: ProjectRecordEntry["files"] = [];
+
+    for (const [fileId, review] of Object.entries(reviews)) {
+      const r = review as Record<string, unknown>;
+      // Skip meta keys (recordstatus, lastupdated, etc.)
+      if (typeof r === "object" && r !== null && r.project === projectName) {
+        matchedFiles.push({
+          fileId,
+          project: r.project as string,
+          status: (r.status as RecordStatus) || "pending_review",
+          reviewDate: (r.reviewDate as string) || (r.date as string) || "",
+          reviewedBy: (r.reviewedBy as string) || "",
+          identifiedErrors: (r.identifiedErrors as string) || "",
+          errorsFixed: (r.errorsFixed as boolean) || false,
+        });
+      }
+    }
+
+    if (matchedFiles.length > 0) {
+      result.push({ record, files: matchedFiles });
+    }
+  }
+
+  return result;
 }

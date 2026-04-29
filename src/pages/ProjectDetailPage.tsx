@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Briefcase, 
@@ -13,9 +13,16 @@ import {
   Building2,
   FileText,
   Tag,
-  Save
+  Save,
+  Loader2,
+  ChevronRight,
+  ExternalLink,
+  FolderOpen
 } from "lucide-react";
 import { useProjects, type Project } from "@/data/projectsData";
+import { useQMSData } from "@/hooks/useQMSData";
+import { getRecordsForProject, type ProjectRecordEntry } from "@/lib/procedureRecordMapping";
+import { formatTimeAgo } from "@/lib/googleSheets";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -60,30 +67,130 @@ function TeamSection({ team }: { team: Project["team"] }) {
 }
 
 // ============================================================================
-// QMS Records Section
+// QMS Records Section — dynamically linked via fileReviews.project metadata
 // ============================================================================
-function QMSRecordsSection({ agents }: { 
+function QMSRecordsSection({ 
+  projectName, 
+  allRecords,
+  agents 
+}: { 
+  projectName: string;
+  allRecords: any[];
   agents?: string[];
 }) {
+  const navigate = useNavigate();
+  
+  const linked = useMemo(() => getRecordsForProject(projectName, allRecords), [projectName, allRecords]);
+
+  if (linked.length === 0 && (!agents || agents.length === 0)) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+          <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          QMS Records
+        </h3>
+        <p className="text-muted-foreground/60 italic text-sm">
+          No records assigned yet. Assign records in the Record Browser via Edit Metadata → Project Assignment.
+        </p>
+        {agents && agents.length > 0 && (
+          <Card className="p-4 border bg-card">
+            <p className="text-xs font-medium text-muted-foreground uppercase mb-3">Project Agents</p>
+            <div className="flex flex-wrap gap-2">
+              {agents.map((agent: string, idx: number) => (
+                <Badge key={idx} variant="outline">{agent}</Badge>
+              ))}
+            </div>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // Group linked entries by record category for organized display
+  const groupedByCategory = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const entry of linked) {
+      const cat = entry.record.category || "Uncategorized";
+      if (!map.has(cat)) map.set(cat, []);
+      map.get(cat)!.push(entry);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [linked]);
+
+  const totalFiles = linked.reduce((sum: number, e: any) => sum + e.files.length, 0);
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-        <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-        QMS Records
-      </h3>
-      
-      <div className="grid grid-cols-1 gap-4">
-        <Card className="p-4 border bg-card">
-          <p className="text-xs font-medium text-muted-foreground uppercase mb-3">Product Description</p>
-          <p className="text-muted-foreground/60 italic text-sm">Linked via project name</p>
-        </Card>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+          <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          QMS Records
+        </h3>
+        <Badge variant="outline" className="font-mono text-xs">
+          {totalFiles} file{totalFiles !== 1 ? "s" : ""} · {linked.length} form{linked.length !== 1 ? "s" : ""}
+        </Badge>
+      </div>
+
+      <div className="space-y-6">
+        {groupedByCategory.map(([category, entries]: [string, any[]]) => (
+          <div key={category}>
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/70 mb-3 flex items-center gap-2">
+              <FolderOpen className="w-3 h-3" />
+              {category}
+              <Badge variant="outline" className="text-[9px] font-mono">{entries.length} form{entries.length !== 1 ? "s" : ""}</Badge>
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {entries.map((entry: any) => (
+                <div key={entry.record.code} className="group">
+                  {/* Record header */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
+                      {entry.record.code}
+                    </span>
+                    <p className="text-sm font-medium text-foreground truncate">{entry.record.recordName}</p>
+                  </div>
+                  {/* Assigned files for this record */}
+                  <div className="space-y-1.5">
+                    {entry.files.map((f: any) => {
+                      const statusColor = 
+                        f.status === "approved" ? "text-emerald-500" :
+                        f.status === "rejected" ? "text-red-500" :
+                        f.status === "draft" ? "text-muted-foreground" :
+                        "text-amber-500";
+                      return (
+                        <div key={f.fileId} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-card/40 hover:bg-muted/20 transition-all cursor-pointer"
+                          onClick={() => navigate(`/record/${encodeURIComponent(entry.record.code)}`)}>
+                          <Badge variant="outline" className={cn("text-[8px] h-4 font-mono uppercase shrink-0", statusColor)}>
+                            {f.status.replace("_", " ")}
+                          </Badge>
+                          <div className="flex-1 min-w-0 text-xs text-muted-foreground">
+                            {f.reviewDate && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5" />
+                                {new Date(f.reviewDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          {f.reviewedBy && (
+                            <span className="text-[9px] text-muted-foreground shrink-0">{f.reviewedBy}</span>
+                          )}
+                          <ExternalLink className="w-3 h-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
       {agents && agents.length > 0 && (
         <Card className="p-4 border bg-card">
           <p className="text-xs font-medium text-muted-foreground uppercase mb-3">Project Agents</p>
           <div className="flex flex-wrap gap-2">
-            {agents.map((agent, idx) => (
+            {agents.map((agent: string, idx: number) => (
               <Badge key={idx} variant="outline">{agent}</Badge>
             ))}
           </div>
@@ -212,6 +319,7 @@ export default function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { getById, update, delete: deleteProject } = useProjects();
+  const { data: allRecords } = useQMSData();
   
   const [isEditing, setIsEditing] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -354,7 +462,11 @@ export default function ProjectDetailPage() {
 
             {/* QMS Records */}
             <Card className="p-6 border bg-card">
-              <QMSRecordsSection agents={project.agents} />
+              <QMSRecordsSection 
+                projectName={project.name}
+                allRecords={allRecords || []}
+                agents={project.agents}
+              />
             </Card>
           </>
         )}
