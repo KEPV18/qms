@@ -27,14 +27,19 @@ export interface RoleKPIData {
 // Raw data import
 import kpiDataJson from './kpiData.json';
 
-export const KPI_DATA: RoleKPIData[] = (kpiDataJson as RoleKPIData[]).map(role => ({
-  ...role,
-  kpis: role.kpis.map(kpi => ({
-    ...kpi,
-    target: kpi.target || 0.9,
-    weight: kpi.weight || 0.1
-  }))
-}));
+export const KPI_DATA: RoleKPIData[] = (kpiDataJson as RoleKPIData[]).map(role => {
+  // Normalize weights so they sum to 1.0 (100%) per role
+  const rawWeights = role.kpis.map(kpi => kpi.weight || 0.1);
+  const rawSum = rawWeights.reduce((a, b) => a + b, 0);
+  return {
+    ...role,
+    kpis: role.kpis.map((kpi, i) => ({
+      ...kpi,
+      target: kpi.target || 0.9,
+      weight: rawSum > 0 ? kpi.weight / rawSum : 1 / role.kpis.length,
+    })),
+  };
+});
 
 // Helper function to get KPIs by role
 export const getKPIsByRole = (roleKey: string): RoleKPIData | undefined => {
