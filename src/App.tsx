@@ -27,6 +27,8 @@ const FormsRegistryPage = lazy(() => import("./pages/FormsRegistryPage"));
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
 const ProjectDetailPage = lazy(() => import("./pages/ProjectDetailPage"));
 const ProjectFormPage = lazy(() => import("./pages/ProjectFormPage"));
+const KPIDashboardPage = lazy(() => import("./pages/KPIDashboardPage"));
+const KPIReportsPage = lazy(() => import("./pages/KPIReportsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -89,6 +91,8 @@ const App = () => {
                     <Route path="/projects/new" element={<RequireAuth><PageBoundary><ProjectFormPage /></PageBoundary></RequireAuth>} />
                     <Route path="/projects/:id" element={<RequireAuth><PageBoundary><ProjectDetailPage /></PageBoundary></RequireAuth>} />
                     <Route path="/projects/:id/edit" element={<RequireAuth><PageBoundary><ProjectFormPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/kpi" element={<RequireAuth><PageBoundary><KPIDashboardPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/kpi/reports" element={<RequireAuth><PageBoundary><KPIReportsPage /></PageBoundary></RequireAuth>} />
                     <Route path="/archive" element={<RequireAuth><PageBoundary><ArchivePage /></PageBoundary></RequireAuth>} />
                     <Route path="/risk-management" element={<RequireAuth><PageBoundary><RiskManagementPage /></PageBoundary></RequireAuth>} />
                     <Route path="/activity" element={<RequireAuth><PageBoundary><ActivityPage /></PageBoundary></RequireAuth>} />
