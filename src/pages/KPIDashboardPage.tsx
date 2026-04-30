@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Target, 
-  Users, 
-  TrendingUp, 
-  Award, 
+import {
+  Target,
+  Users,
+  TrendingUp,
+  Award,
   Briefcase,
   BarChart3,
   PieChart,
@@ -15,18 +15,23 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertCircle,
-  Info
+  Info,
+  ArrowLeft,
+  Grid3X3,
+  List,
 } from "lucide-react";
-import { 
-  KPI_DATA, 
-  getAllCategories, 
+import {
+  KPI_DATA,
+  getAllCategories,
   getAllRoleTitles,
   getKPIStatistics,
   getCategoryColor,
   calculateRoleKPIScore,
   type RoleKPIData,
-  type KPI
+  type KPI,
 } from "@/data/kpiData";
+import { AppShell } from "@/components/layout/AppShell";
+import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -61,31 +66,43 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
-// Helper function to calculate total weight
-const calculateTotalWeight = (kpis: KPI[]) => {
-  return kpis.reduce((sum, kpi) => sum + kpi.weight, 0);
-};
+// ── Helpers ──────────────────────────────────────────────────────────
 
-// Role KPI Card Component
-const RoleKPICard = ({ role, onClick }: { role: RoleKPIData; onClick: () => void }) => {
+const calculateTotalWeight = (kpis: KPI[]) =>
+  kpis.reduce((sum, kpi) => sum + kpi.weight, 0);
+
+// ── Role KPI Card ────────────────────────────────────────────────────
+
+const RoleKPICard = ({
+  role,
+  onClick,
+}: {
+  role: RoleKPIData;
+  onClick: () => void;
+}) => {
   const totalWeight = calculateTotalWeight(role.kpis);
   const isWeightValid = totalWeight >= 0.95 && totalWeight <= 1.05;
-  const categories = [...new Set(role.kpis.map(k => k.category))];
-  
+
   return (
-    <Card 
-      className="hover:shadow-lg transition-shadow cursor-pointer border-l-4"
-      style={{ borderLeftColor: isWeightValid ? '#10b981' : '#ef4444' }}
+    <Card
+      className={cn(
+        "hover:shadow-lg transition-all cursor-pointer border-l-4 group",
+        "bg-card text-card-foreground",
+        isWeightValid
+          ? "border-l-success hover:border-l-success/80"
+          : "border-l-destructive hover:border-l-destructive/80"
+      )}
       onClick={onClick}
     >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg font-semibold text-slate-800">
+            <CardTitle className="text-lg font-semibold">
               {role.title}
             </CardTitle>
-            <p className="text-sm text-slate-500">{role.department}</p>
+            <p className="text-sm text-muted-foreground">{role.department}</p>
           </div>
           <Badge variant={isWeightValid ? "default" : "destructive"}>
             {role.kpis.length} KPIs
@@ -94,37 +111,55 @@ const RoleKPICard = ({ role, onClick }: { role: RoleKPIData; onClick: () => void
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {/* Manager info */}
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Users className="w-4 h-4" />
+          {/* Manager */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="w-4 h-4 shrink-0" />
             <span>Reports to: {role.manager}</span>
           </div>
-          
+
           {/* Weight validation */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-600">Weight Total:</span>
+            <span className="text-sm text-muted-foreground">
+              Weight Total:
+            </span>
             <div className="flex items-center gap-2">
-              <span className={`font-medium ${isWeightValid ? 'text-green-600' : 'text-red-600'}`}>
+              <span
+                className={cn(
+                  "font-medium",
+                  isWeightValid ? "text-success" : "text-destructive"
+                )}
+              >
                 {(totalWeight * 100).toFixed(0)}%
               </span>
               {isWeightValid ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <CheckCircle2 className="w-4 h-4 text-success" />
               ) : (
-                <AlertCircle className="w-4 h-4 text-red-500" />
+                <AlertCircle className="w-4 h-4 text-destructive" />
               )}
             </div>
           </div>
-          
+
           {/* Categories */}
-          <div className="flex flex-wrap gap-1 pt-2">
-            {categories.slice(0, 3).map(cat => (
-              <Badge key={cat} variant="secondary" className="text-xs">
-                {cat}
-              </Badge>
-            ))}
-            {categories.length > 3 && (
+          <div className="flex flex-wrap gap-1.5 pt-2">
+            {(() => {
+              const cats = [...new Set(role.kpis.map((k) => k.category))];
+              return cats.slice(0, 3).map((cat) => (
+                <Badge
+                  key={cat}
+                  variant="secondary"
+                  className="text-xs"
+                  style={{
+                    backgroundColor: getCategoryColor(cat),
+                    color: "#fff",
+                  }}
+                >
+                  {cat}
+                </Badge>
+              ));
+            })()}
+            {[...new Set(role.kpis.map((k) => k.category))].length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{categories.length - 3}
+                +{[...new Set(role.kpis.map((k) => k.category))].length - 3}
               </Badge>
             )}
           </div>
@@ -134,27 +169,40 @@ const RoleKPICard = ({ role, onClick }: { role: RoleKPIData; onClick: () => void
   );
 };
 
-// KPI Detail View Component
+// ── KPI Detail Dialog Content ────────────────────────────────────────
+
 const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-slate-50 p-4 rounded-lg">
-        <h3 className="text-2xl font-bold text-slate-800">{role.title}</h3>
-        <div className="flex flex-wrap gap-4 mt-2 text-sm text-slate-600">
-          <span><strong>Department:</strong> {role.department}</span>
-          <span><strong>Manager:</strong> {role.manager}</span>
-          <span><strong>Level:</strong> {role.jobLevel}</span>
-          <span><strong>Status:</strong> {role.employmentStatus}</span>
+      {/* Role header */}
+      <div className="bg-muted/50 p-4 rounded-lg border">
+        <h3 className="text-2xl font-bold">{role.title}</h3>
+        <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+          <span>
+            <strong className="text-foreground">Department:</strong>{" "}
+            {role.department}
+          </span>
+          <span>
+            <strong className="text-foreground">Manager:</strong>{" "}
+            {role.manager}
+          </span>
+          <span>
+            <strong className="text-foreground">Level:</strong>{" "}
+            {role.jobLevel}
+          </span>
+          <span>
+            <strong className="text-foreground">Status:</strong>{" "}
+            {role.employmentStatus}
+          </span>
         </div>
       </div>
-      
-      {/* KPIs Table */}
-      <div className="overflow-x-auto">
+
+      {/* KPIs table */}
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40%]">Objective</TableHead>
+              <TableHead className="w-[35%]">Objective</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="text-center">Weight</TableHead>
               <TableHead className="text-center">Target</TableHead>
@@ -163,21 +211,21 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {role.kpis.map((kpi, idx) => {
-              const achievement = kpi.evaluation 
-                ? (kpi.evaluation / kpi.target) * 100 
+            {role.kpis.map((kpi) => {
+              const achievement = kpi.evaluation
+                ? (kpi.evaluation / kpi.target) * 100
                 : 0;
-              
+
               return (
                 <TableRow key={kpi.id}>
-                  <TableCell className="font-medium align-top">
-                    <span className="text-slate-700">{kpi.objective}</span>
+                  <TableCell className="font-medium">
+                    {kpi.objective}
                   </TableCell>
                   <TableCell>
-                    <Badge 
-                      style={{ 
+                    <Badge
+                      style={{
                         backgroundColor: getCategoryColor(kpi.category),
-                        color: 'white'
+                        color: "#fff",
                       }}
                     >
                       {kpi.category}
@@ -186,35 +234,31 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
                   <TableCell className="text-center">
                     {(kpi.weight * 100).toFixed(0)}%
                   </TableCell>
+                  <TableCell className="text-center">{kpi.target}</TableCell>
                   <TableCell className="text-center">
-                    {(kpi.target * 100).toFixed(0)}%
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {kpi.evaluation !== null 
-                      ? (kpi.evaluation * 100).toFixed(0) + '%' 
-                      : '-'
-                    }
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {kpi.evaluation !== null ? (
-                      <div className="flex items-center gap-2">
-                        <Progress 
-                          value={Math.min(achievement, 100)} 
-                          className={`w-16 h-2 ${
-                            achievement >= 100 ? 'bg-green-500' : 
-                            achievement >= 80 ? 'bg-amber-500' : 'bg-red-500'
-                          }`}
-                        />
-                        <span className={`text-xs font-medium ${
-                          achievement >= 100 ? 'text-green-600' : 
-                          achievement >= 80 ? 'text-amber-600' : 'text-red-600'
-                        }`}>
-                          {achievement.toFixed(1)}%
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">-</span>
+                    {kpi.evaluation ?? (
+                      <span className="text-muted-foreground text-xs">
+                        N/A
+                      </span>
                     )}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Progress
+                        value={achievement}
+                        className="w-20 h-2"
+                        indicatorClassName={
+                          achievement >= 80
+                            ? "bg-success"
+                            : achievement >= 50
+                            ? "bg-warning"
+                            : "bg-destructive"
+                        }
+                      />
+                      <span className="text-sm font-medium w-10 text-right">
+                        {achievement.toFixed(0)}%
+                      </span>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -222,345 +266,400 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
           </TableBody>
         </Table>
       </div>
-      
-      {/* Summary */}
-      <div className="bg-slate-50 p-4 rounded-lg">
-        <h4 className="font-semibold text-slate-700 mb-2">KPI Configuration Summary</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <span className="text-slate-500">KPI Weight:</span>
-            <span className="ml-2 font-medium">{(role.kpiWeight * 100).toFixed(0)}%</span>
+
+      {/* Score card */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="w-4 h-4 text-primary" />
+            Overall Performance Score
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl font-bold">
+              {calculateRoleKPIScore(role.kpis).toFixed(1)}%
+            </div>
+            <div className="flex-1">
+              <Progress
+                value={calculateRoleKPIScore(role.kpis)}
+                className="h-3"
+                indicatorClassName={
+                  calculateRoleKPIScore(role.kpis) >= 80
+                    ? "bg-success"
+                    : calculateRoleKPIScore(role.kpis) >= 50
+                    ? "bg-warning"
+                    : "bg-destructive"
+                }
+              />
+            </div>
           </div>
-          <div>
-            <span className="text-slate-500">Competencies:</span>
-            <span className="ml-2 font-medium">{(role.competenciesWeight * 100).toFixed(0)}%</span>
-          </div>
-          <div>
-            <span className="text-slate-500">Total KPIs:</span>
-            <span className="ml-2 font-medium">{role.kpis.length}</span>
-          </div>
-          <div>
-            <span className="text-slate-500">Total Weight:</span>
-            <span className={`ml-2 font-medium ${
-              calculateTotalWeight(role.kpis) >= 0.95 && calculateTotalWeight(role.kpis) <= 1.05
-                ? 'text-green-600'
-                : 'text-red-600'
-            }`}>
-              {(calculateTotalWeight(role.kpis) * 100).toFixed(0)}%
-            </span>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
-// Main Page Component
+// ── Main Page ────────────────────────────────────────────────────────
+
 export default function KPIDashboardPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedRole, setSelectedRole] = useState<RoleKPIData | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
-  
+
   const categories = getAllCategories();
   const statistics = getKPIStatistics();
-  
-  // Filter roles
+
   const filteredRoles = useMemo(() => {
-    return KPI_DATA.filter(role => {
-      const matchesSearch = role.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          role.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          role.manager.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = selectedCategory === "all" || 
-                            role.kpis.some(k => k.category === selectedCategory);
-      
+    return KPI_DATA.filter((role) => {
+      const matchesSearch =
+        role.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        role.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        role.manager.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" ||
+        role.kpis.some((k) => k.category === selectedCategory);
       return matchesSearch && matchesCategory;
     });
   }, [searchTerm, selectedCategory]);
-  
+
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-slate-50">
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <Target className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-800">
-                    KPI Dashboard
-                  </h1>
-                  <p className="text-sm text-slate-500">
-                    Individual Performance Management (IPM) - ISO 9001:2015
-                  </p>
+      <AppShell
+        breadcrumbs={[
+          { label: "Dashboard", path: "/" },
+          { label: "KPI Dashboard" },
+        ]}
+      >
+        {/* ── Page header ──────────────────────────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-primary text-primary-foreground">
+              <Target className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">KPI Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Individual Performance Management (IPM) — ISO 9001:2015
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Statistics cards ─────────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Briefcase className="w-4 h-4" />
+                Total Roles
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{statistics.totalRoles}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Total KPIs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{statistics.totalKPIs}</p>
+              <p className="text-xs text-muted-foreground">
+                Avg {statistics.avgKPIsPerRole} per role
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <PieChart className="w-4 h-4" />
+                Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{statistics.categories}</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Valid Weights
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">
+                {statistics.rolesWithValidWeights}/{statistics.totalRoles}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Roles with 100% weight
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ── Filters ──────────────────────────────────────────── */}
+        <Card className="mb-4">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search roles, departments, managers…"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-                  Back to Home
+
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <Filter className="w-4 h-4 mr-2 shrink-0" />
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="gap-2"
+                >
+                  <Grid3X3 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Grid</span>
+                </Button>
+                <Button
+                  variant={viewMode === "table" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("table")}
+                  className="gap-2"
+                >
+                  <List className="w-4 h-4" />
+                  <span className="hidden sm:inline">Table</span>
                 </Button>
               </div>
             </div>
-          </div>
-        </header>
-        
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
-                  Total Roles
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-slate-800">{statistics.totalRoles}</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  Total KPIs
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-slate-800">{statistics.totalKPIs}</p>
-                <p className="text-xs text-slate-500">Avg {statistics.avgKPIsPerRole} per role</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                  <PieChart className="w-4 h-4" />
-                  Categories
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-slate-800">{statistics.categories}</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Valid Weights
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-slate-800">
-                  {statistics.rolesWithValidWeights}/{statistics.totalRoles}
-                </p>
-                <p className="text-xs text-slate-500">Roles with 100% weight</p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Filters */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Search roles, departments, managers..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                </div>
-                
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-[200px]">
-                    <Filter className="w-4 h-4 mr-2" />
-                    <SelectValue placeholder="Filter by category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
-                <div className="flex gap-2">
-                  <Button 
-                    variant={viewMode === "grid" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                  >
-                    Grid
-                  </Button>
-                  <Button 
-                    variant={viewMode === "table" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("table")}
-                  >
-                    Table
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Results Count */}
-          <div className="mb-4 flex items-center gap-2">
-            <span className="text-sm text-slate-500">
-              Showing {filteredRoles.length} of {KPI_DATA.length} roles
-            </span>
-            {searchTerm && (
-              <Badge variant="secondary" className="text-xs">
-                Search: "{searchTerm}"
-              </Badge>
-            )}
-            {selectedCategory !== "all" && (
-              <Badge variant="secondary" className="text-xs">
-                Category: {selectedCategory}
-              </Badge>
-            )}
-          </div>
-          
-          {/* Grid View */}
-          {viewMode === "grid" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredRoles.map(role => (
-                <Dialog key={role.roleKey}>
-                  <DialogTrigger asChild>
-                    <div>
-                      <RoleKPICard role={role} onClick={() => setSelectedRole(role)} />
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>KPI Details</DialogTitle>
-                    </DialogHeader>
-                    <KPIDetailView role={role} />
-                  </DialogContent>
-                </Dialog>
-              ))}
-            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Results count ────────────────────────────────────── */}
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            Showing {filteredRoles.length} of {KPI_DATA.length} roles
+          </span>
+          {searchTerm && (
+            <Badge variant="secondary" className="text-xs">
+              Search: &ldquo;{searchTerm}&rdquo;
+            </Badge>
           )}
-          
-          {/* Table View */}
-          {viewMode === "table" && (
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Role Title</TableHead>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Manager</TableHead>
-                      <TableHead className="text-center">KPIs</TableHead>
-                      <TableHead className="text-center">Total Weight</TableHead>
-                      <TableHead>Categories</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRoles.map(role => {
-                      const totalWeight = calculateTotalWeight(role.kpis);
-                      const isValid = totalWeight >= 0.95 && totalWeight <= 1.05;
-                      
-                      return (
-                        <TableRow key={role.roleKey}>
-                          <TableCell className="font-medium">{role.title}</TableCell>
-                          <TableCell>{role.department}</TableCell>
-                          <TableCell>{role.manager}</TableCell>
-                          <TableCell className="text-center">{role.kpis.length}</TableCell>
-                          <TableCell className="text-center">
-                            <span className={isValid ? 'text-green-600' : 'text-red-600'}>
-                              {(totalWeight * 100).toFixed(0)}%
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {[...new Set(role.kpis.map(k => k.category))].slice(0, 2).map(cat => (
-                                <Badge key={cat} variant="secondary" className="text-xs">
+          {selectedCategory !== "all" && (
+            <Badge variant="secondary" className="text-xs">
+              Category: {selectedCategory}
+            </Badge>
+          )}
+        </div>
+
+        {/* ── Grid view ────────────────────────────────────────── */}
+        {viewMode === "grid" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredRoles.map((role) => (
+              <Dialog key={role.roleKey}>
+                <DialogTrigger asChild>
+                  <div>
+                    <RoleKPICard role={role} onClick={() => {}} />
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>KPI Details — {role.title}</DialogTitle>
+                  </DialogHeader>
+                  <KPIDetailView role={role} />
+                </DialogContent>
+              </Dialog>
+            ))}
+          </div>
+        )}
+
+        {/* ── Table view ───────────────────────────────────────── */}
+        {viewMode === "table" && (
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role Title</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Manager</TableHead>
+                    <TableHead className="text-center">KPIs</TableHead>
+                    <TableHead className="text-center">Total Weight</TableHead>
+                    <TableHead>Categories</TableHead>
+                    <TableHead className="text-right">Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRoles.map((role) => {
+                    const totalWeight = calculateTotalWeight(role.kpis);
+                    const isValid =
+                      totalWeight >= 0.95 && totalWeight <= 1.05;
+                    return (
+                      <TableRow key={role.roleKey}>
+                        <TableCell className="font-medium">
+                          {role.title}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {role.department}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {role.manager}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {role.kpis.length}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <span
+                            className={
+                              isValid ? "text-success" : "text-destructive"
+                            }
+                          >
+                            {(totalWeight * 100).toFixed(0)}%
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {[
+                              ...new Set(role.kpis.map((k) => k.category)),
+                            ]
+                              .slice(0, 2)
+                              .map((cat) => (
+                                <Badge
+                                  key={cat}
+                                  variant="secondary"
+                                  className="text-xs"
+                                  style={{
+                                    backgroundColor: getCategoryColor(cat),
+                                    color: "#fff",
+                                  }}
+                                >
                                   {cat}
                                 </Badge>
                               ))}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <ExternalLink className="w-4 h-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                                <DialogHeader>
-                                  <DialogTitle>KPI Details</DialogTitle>
-                                </DialogHeader>
-                                <KPIDetailView role={role} />
-                              </DialogContent>
-                            </Dialog>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Category Legend */}
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Category Legend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {categories.map(cat => (
-                  <Badge 
-                    key={cat}
-                    style={{ 
-                      backgroundColor: getCategoryColor(cat),
-                      color: 'white'
-                    }}
-                  >
-                    {cat}
-                  </Badge>
-                ))}
-              </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <ExternalLink className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle>
+                                  KPI Details — {role.title}
+                                </DialogTitle>
+                              </DialogHeader>
+                              <KPIDetailView role={role} />
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
-          
-          {/* Audit Note */}
-          <Card className="mt-6 bg-amber-50 border-amber-200">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-amber-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-amber-800">ISO 9001:2015 Compliance Note</h4>
-                  <p className="text-sm text-amber-700 mt-1">
-                    This KPI Dashboard provides Individual Performance Management (IPM) data for all operational roles. 
-                    Per ISO 9001:2015 Clause 9.3.2, Management Review inputs include organizational performance data. 
-                    Each role's KPI weights must sum to 100%. Valid weights are indicated with green borders.
-                  </p>
-                  <p className="text-xs text-amber-600 mt-2">
-                    Source: /home/kepa/Downloads/FORMS/vezlooipmssheets/ | Generated: {new Date().toISOString().split('T')[0]}
-                  </p>
-                </div>
-              </div>
+        )}
+
+        {/* ── Empty state ──────────────────────────────────────── */}
+        {filteredRoles.length === 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Search className="w-12 h-12 text-muted-foreground/40 mb-4" />
+              <p className="text-lg font-medium">No roles found</p>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your search or filter criteria.
+              </p>
             </CardContent>
           </Card>
-        </main>
-      </div>
+        )}
+
+        {/* ── Category Legend ──────────────────────────────────── */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              Category Legend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <Badge
+                  key={cat}
+                  style={{
+                    backgroundColor: getCategoryColor(cat),
+                    color: "#fff",
+                  }}
+                >
+                  {cat}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── ISO Note ─────────────────────────────────────────── */}
+        <Card className="mt-6 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <h4 className="font-medium text-amber-800 dark:text-amber-300">
+                  ISO 9001:2015 Compliance Note
+                </h4>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                  This KPI Dashboard provides Individual Performance
+                  Management (IPM) data for all operational roles. Per ISO
+                  9001:2015 Clause 9.3.2, Management Review inputs include
+                  organizational performance data. Each role&apos;s KPI
+                  weights must sum to 100%. Valid weights are indicated with
+                  green borders.
+                </p>
+                <p className="text-xs text-amber-600 dark:text-amber-500 mt-2">
+                  Source: /home/kepa/Downloads/FORMS/vezlooipmssheets/ |
+                  Generated:{" "}
+                  {new Date().toISOString().split("T")[0]}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Footer ───────────────────────────────────────────── */}
+        <Footer />
+      </AppShell>
     </TooltipProvider>
   );
 }
