@@ -207,62 +207,37 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
               <TableHead className="text-center">Weight</TableHead>
               <TableHead className="text-center">Target</TableHead>
               <TableHead className="text-center">Evaluation</TableHead>
-              <TableHead className="text-center">Achievement</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {role.kpis.map((kpi) => {
-              const achievement = kpi.evaluation
-                ? (kpi.evaluation / kpi.target) * 100
-                : 0;
-
-              return (
-                <TableRow key={kpi.id}>
-                  <TableCell className="font-medium">
-                    {kpi.objective}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      style={{
-                        backgroundColor: getCategoryColor(kpi.category),
-                        color: "#fff",
-                      }}
-                    >
-                      {kpi.category}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {(kpi.weight * 100).toFixed(0)}%
-                  </TableCell>
-                  <TableCell className="text-center">{kpi.target}</TableCell>
-                  <TableCell className="text-center">
-                    {kpi.evaluation ?? (
-                      <span className="text-muted-foreground text-xs">
-                        N/A
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      <Progress
-                        value={achievement}
-                        className="w-20 h-2"
-                        indicatorClassName={
-                          achievement >= 80
-                            ? "bg-success"
-                            : achievement >= 50
-                            ? "bg-warning"
-                            : "bg-destructive"
-                        }
-                      />
-                      <span className="text-sm font-medium w-10 text-right">
-                        {achievement.toFixed(0)}%
-                      </span>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {role.kpis.map((kpi) => (
+              <TableRow key={kpi.id}>
+                <TableCell className="font-medium">
+                  {kpi.objective}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    style={{
+                      backgroundColor: getCategoryColor(kpi.category),
+                      color: "#fff",
+                    }}
+                  >
+                    {kpi.category}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  {(kpi.weight * 100).toFixed(0)}%
+                </TableCell>
+                <TableCell className="text-center">{kpi.target}</TableCell>
+                <TableCell className="text-center">
+                  {kpi.evaluation ?? (
+                    <span className="text-muted-foreground text-xs">
+                      N/A
+                    </span>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
