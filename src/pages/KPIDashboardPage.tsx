@@ -91,8 +91,8 @@ const RoleKPICard = ({
         "hover:shadow-lg transition-all cursor-pointer border-l-4 group",
         "bg-card text-card-foreground",
         isWeightValid
-          ? "border-l-success hover:border-l-success/80"
-          : "border-l-destructive hover:border-l-destructive/80"
+          ? "border-l-emerald-500 hover:border-l-emerald-400"
+          : "border-l-red-500 hover:border-l-red-400"
       )}
       onClick={onClick}
     >
@@ -278,16 +278,16 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
         <CardContent>
           <div className="flex items-center gap-4">
             <div className="text-3xl font-bold">
-              {calculateRoleKPIScore(role.kpis).toFixed(1)}%
+              {calculateRoleKPIScore(role).toFixed(1)}%
             </div>
             <div className="flex-1">
               <Progress
-                value={calculateRoleKPIScore(role.kpis)}
+                value={calculateRoleKPIScore(role)}
                 className="h-3"
                 indicatorClassName={
-                  calculateRoleKPIScore(role.kpis) >= 80
+                  calculateRoleKPIScore(role) >= 80
                     ? "bg-success"
-                    : calculateRoleKPIScore(role.kpis) >= 50
+                    : calculateRoleKPIScore(role) >= 50
                     ? "bg-warning"
                     : "bg-destructive"
                 }
