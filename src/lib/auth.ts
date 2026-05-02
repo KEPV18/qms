@@ -35,8 +35,8 @@ export async function getAccessToken(): Promise<string | null> {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                if (response.status === 401) {
-                    // Cache the 401 for 5 minutes to avoid repeated console errors
+                // Cache failures (401 no-token or 500 refresh-fail) for 5 minutes
+                if (response.status === 401 || response.status === 500) {
                     tokenUnavailableUntil = Date.now() + 300000;
                     return null;
                 }

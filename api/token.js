@@ -1,6 +1,6 @@
-import axios from 'axios';
+const axios = require('axios');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
     const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
@@ -17,12 +17,12 @@ export default async function handler(req, res) {
             grant_type: 'refresh_token',
         });
 
-        res.json({
+        res.status(200).json({
             access_token: response.data.access_token,
             expires_in: response.data.expires_in,
         });
     } catch (error) {
         console.error('Error refreshing token:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Failed to refresh token' });
+        res.status(500).json({ error: 'Failed to refresh token: ' + (error.response?.data?.error || error.message) });
     }
-}
+};
