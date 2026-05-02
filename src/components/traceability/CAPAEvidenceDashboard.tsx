@@ -509,7 +509,7 @@ const CAPAEvidenceDashboard: React.FC = () => {
           ].map(tab => (
             <Button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'all' | 'pending-verification' | 'ready-to-close')}
               variant={activeTab === tab.id ? "default" : "secondary"}
               size="sm"
             >

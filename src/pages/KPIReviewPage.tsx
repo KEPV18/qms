@@ -550,7 +550,7 @@ const KPIReviewPage: React.FC = () => {
               </select>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'on-track' | 'warning' | 'critical')}
                 className="rounded-md border border-input bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <option value="all">All Status</option>
