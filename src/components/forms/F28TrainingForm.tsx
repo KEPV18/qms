@@ -77,11 +77,13 @@ const PROJECT_OPTIONS = [
 ];
 
 const TRAINER_OPTIONS = [
-  "Maria Magdy",
   "Ahmed Khaled",
-  "Internal Trainer",
+  "Andrew Maged",
+  "Youssef Hamada",
+  "Eman El Serafy",
+  "Mena Sami",
+  "Yara Khairy",
   "External Trainer",
-  "Self-Study",
 ];
 
 // ============================================================================

@@ -171,8 +171,8 @@ export function QuickActions() {
     if (!records || records.length === 0) return;
     setIsUpdatingReviewer(true);
     try {
-      await batchUpdateReviewedBy(records, "Ahmed khaled");
-      toast.success("Updated", { description: "Ahmed khaled has been set as reviewer for all records" });
+      await batchUpdateReviewedBy(records, "Ahmed Khaled");
+      toast.success("Updated", { description: "Ahmed Khaled has been set as reviewer for all records" });
     } catch (e: unknown) {
       toast.error("Update Failed", { description: (e as Error)?.message });
     } finally {
@@ -226,7 +226,7 @@ export function QuickActions() {
           className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:-translate-y-0.5 transition-all duration-300 text-[11px] font-semibold"
         >
           <UserCheck className="w-4 h-4" />
-          <span>{isUpdatingReviewer ? "Updating..." : "Set Reviewer: Ahmed khaled"}</span>
+          <span>{isUpdatingReviewer ? "Updating..." : "Set Reviewer: Ahmed Khaled"}</span>
         </button>
       </div>
 

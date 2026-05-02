@@ -69,64 +69,6 @@ interface CAPAWithEvidence {
 }
 
 // ============================================================================
-// MOCK DATA (replace with actual service calls)
-// ============================================================================
-
-const MOCK_CAPAS: CAPAWithEvidence[] = [
-  {
-    id: "F/22-001",
-    title: "Annotation Accuracy Drop - ETH Project",
-    rootCause: "Inadequate training on new annotation guidelines",
-    correctiveAction: "Comprehensive retraining with competency verification",
-    status: "under-verification",
-    createdAt: "2026-01-15",
-    targetCloseDate: "2026-02-15",
-    linkedToF09: "F/09-001",
-    linkedToKPIs: ["KPI-PROD-01", "KPI-QUAL-01"],
-    evidence: [
-      {
-        type: "KPI_IMPROVEMENT",
-        description: "Wait for next monthly annotation accuracy reading",
-        status: "pending",
-      },
-      {
-        type: "TRAINING_COMPLETED",
-        description: "All VIZ-001 to VIZ-005 agents completed retraining",
-        linkedId: "F/28-002",
-        verifiedBy: "Maria Magdy",
-        verifiedAt: "2026-01-25T10:00:00Z",
-        status: "verified",
-      },
-    ],
-    canClose: false,
-  },
-  {
-    id: "F/22-002",
-    title: "Client Complaint Response Delay",
-    rootCause: "Email notification system failure",
-    correctiveAction: "Implement redundant notification channels + SLA monitoring",
-    status: "evidence-pending",
-    createdAt: "2026-02-01",
-    targetCloseDate: "2026-03-01",
-    linkedToKPIs: ["KPI-CLIENT-01"],
-    evidence: [
-      {
-        type: "AUDIT_FINDING_CLOSED",
-        description: "Internal audit confirmed response time improved to <4hrs",
-        status: "verified",
-      },
-      {
-        type: "PROCEDURE_UPDATED",
-        description: "P/08 updated with redundant notification clause",
-        linkedId: "P/08",
-        status: "verified",
-      },
-    ],
-    canClose: false, // Need KPI improvement
-  },
-];
-
-// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -398,8 +340,8 @@ const AddEvidenceModal: React.FC<{
 // ============================================================================
 
 const CAPAEvidenceDashboard: React.FC = () => {
-  const [capas, setCapas] = useState<CAPAWithEvidence[]>(MOCK_CAPAS);
-  const [selectedCapa, setSelectedCapa] = useState<CAPAWithEvidence | null>(MOCK_CAPAS[0]);
+  const [capas, setCapas] = useState<CAPAWithEvidence[]>([]);
+  const [selectedCapa, setSelectedCapa] = useState<CAPAWithEvidence | null>(null);
   const [showAddEvidenceModal, setShowAddEvidenceModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'pending-verification' | 'ready-to-close'>('all');
   
