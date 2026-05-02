@@ -192,11 +192,11 @@ export const STATUS_TRANSITIONS: Record<RecordStatus, RecordStatus[]> = {
   rejected: ["draft"],
 };
 
-export const STATUS_LABELS: Record<RecordStatus, { en: string; ar: string; color: string }> = {
-  draft: { en: "Draft", ar: "\u0645\u0633\u0648\u062f\u0629", color: "gray" },
-  pending_review: { en: "Pending Review", ar: "\u0642\u064a\u062f \u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629", color: "yellow" },
-  approved: { en: "Approved", ar: "\u062a\u0645\u062a \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629", color: "green" },
-  rejected: { en: "Rejected", ar: "\u0645\u0631\u0641\u0648\u0636", color: "red" },
+export const STATUS_LABELS: Record<RecordStatus, { en: string; color: string }> = {
+  draft: { en: "Draft", color: "gray" },
+  pending_review: { en: "Pending Review", color: "yellow" },
+  approved: { en: "Approved", color: "green" },
+  rejected: { en: "Rejected", color: "red" },
 };
 
 /** Normalize a category string to a module id and name */

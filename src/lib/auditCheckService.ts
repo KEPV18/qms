@@ -318,7 +318,7 @@ async function auditSingleRecord(
                 result.issues.push({ message: `Duplicate file names in folder: ${dupList}`, severity: 'warning', phase: 3 });
               }
 
-              // File Format Validation (صيغ الملفات)
+              // File Format Validation
               const validExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.jpg', '.jpeg', '.png', '.csv', '.txt'];
               const googleMimeTypes = ['application/vnd.google-apps.document', 'application/vnd.google-apps.spreadsheet', 'application/vnd.google-apps.presentation'];
               

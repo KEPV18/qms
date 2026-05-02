@@ -242,7 +242,7 @@ export function TopNav() {
 
               <DropdownMenu id="tools" label="Tools" icon={Wrench} items={toolItems} />
 
-              {(projects.length > 0 || true) && (
+              {(projects.length > 0) && (
                 <button
                   aria-label="Projects"
                   onClick={() => navigate("/projects")}

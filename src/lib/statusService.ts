@@ -17,26 +17,22 @@ const STATUS_TRANSITIONS: Record<RecordStatus, RecordStatus[]> = {
     rejected: ['draft'], // Can resubmit
 };
 
-// Status display labels (Arabic + English)
-export const STATUS_LABELS: Record<RecordStatus, { en: string; ar: string; color: string }> = {
+// Status display labels
+export const STATUS_LABELS: Record<RecordStatus, { en: string; color: string }> = {
     draft: {
         en: 'Draft',
-        ar: 'مسودة',
         color: 'gray',
     },
     pending_review: {
         en: 'Pending Review',
-        ar: 'قيد المراجعة',
         color: 'yellow',
     },
     approved: {
         en: 'Approved',
-        ar: 'تمت الموافقة',
         color: 'green',
     },
     rejected: {
         en: 'Rejected',
-        ar: 'مرفوض',
         color: 'red',
     },
 };
