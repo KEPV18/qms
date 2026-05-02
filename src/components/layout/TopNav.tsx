@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ChevronDown,
   Search, FileText, Folder, FileCode, Table, Loader2,

@@ -194,7 +194,7 @@ export default function KPIReportsPage() {
     const csv = generateCSV(filteredRoles);
     downloadFile(
       csv,
-      `VIZZLO_KPI_Report_${new Date().toISOString().split("T")[0]}.csv`,
+      `VEZLOO_KPI_Report_${new Date().toISOString().split("T")[0]}.csv`,
       "text/csv;charset=utf-8;"
     );
   };
@@ -203,7 +203,7 @@ export default function KPIReportsPage() {
     const json = JSON.stringify(generateJSONReport(filteredRoles), null, 2);
     downloadFile(
       json,
-      `VIZZLO_KPI_Report_${new Date().toISOString().split("T")[0]}.json`,
+      `VEZLOO_KPI_Report_${new Date().toISOString().split("T")[0]}.json`,
       "application/json"
     );
   };
@@ -257,7 +257,7 @@ export default function KPIReportsPage() {
 
       {/* ── Print-only header ────────────────────────────────── */}
       <div className="hidden print:block mb-6">
-        <h1 className="text-2xl font-bold">VIZZLO - KPI Audit Report</h1>
+        <h1 className="text-2xl font-bold">VEZLOO - KPI Audit Report</h1>
         <p className="text-sm text-muted-foreground">
           Generated: {new Date().toLocaleDateString()} | ISO 9001:2015 Compliant
           Documentation

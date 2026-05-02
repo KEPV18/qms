@@ -14,6 +14,7 @@ import {
   Archive,
   Layers,
   Target,
+  GitBranch,
 } from "lucide-react";
 import type { RecordStatus } from "@/lib/googleSheets";
 
@@ -145,6 +146,8 @@ export const TOOL_NAV_ITEMS: NavItem[] = [
   { id: "forms", label: "Forms Registry", icon: Layers, path: "/forms" },
   { id: "risk", label: "Risk & Process", icon: AlertTriangle, path: "/risk-management" },
   { id: "kpi", label: "KPI Dashboard", icon: Target, path: "/kpi" },
+  { id: "kpi-review", label: "KPI Review", icon: Activity, path: "/kpi/review" },
+  { id: "traceability", label: "Traceability", icon: GitBranch, path: "/traceability" },
   { id: "activity", label: "Activity Log", icon: Activity, path: "/activity" },
   { id: "archive", label: "Record Archive", icon: Archive, path: "/archive" },
 ];

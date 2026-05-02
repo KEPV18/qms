@@ -1,4 +1,4 @@
-// VIZZLO Individual Performance Management (IPM) - KPI Data
+// VEZLOO Individual Performance Management (IPM) - KPI Data
 // Auto-generated and enhanced from IPM sheets
 // Source: /home/kepa/Downloads/FORMS/vezlooipmssheets/
 

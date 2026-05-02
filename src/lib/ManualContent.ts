@@ -5,7 +5,7 @@ export interface ManualSection {
   subsections?: { id: string; title: string; content: string }[];
 }
 
-export const MANNUAL_METADATA = {
+export const MANUAL_METADATA = {
   company: "Vezloo",
   documentNo: "M/01",
   revisionNo: "02",

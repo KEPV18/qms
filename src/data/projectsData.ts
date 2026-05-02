@@ -1,5 +1,5 @@
 // ============================================================================
-// Projects Data — All 8 Vizzlo Projects with CRUD Operations
+// Projects Data — All 8 Vezloo Projects with CRUD Operations
 // ============================================================================
 
 import { useState, useCallback, useEffect } from "react";
@@ -288,7 +288,7 @@ const INITIAL_PROJECTS: Project[] = [
 ];
 
 // Storage Key
-const STORAGE_KEY = "vizzlo_projects_data";
+const STORAGE_KEY = "vezloo_projects_data";
 
 // ============================================================================
 // CRUD Operations

@@ -126,13 +126,13 @@ function KPISection({ projectName }: { projectName: string }) {
           <div className="flex items-center gap-2 text-xs">
             {isWeightValid ? (
               <>
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span className="text-green-600">Weight validation passed</span>
+                <CheckCircle2 className="w-4 h-4 text-green-500 dark:text-green-400" />
+                <span className="text-green-600 dark:text-green-400">Weight validation passed</span>
               </>
             ) : (
               <>
-                <AlertCircle className="w-4 h-4 text-amber-500" />
-                <span className="text-amber-600">Weight: {Math.round(totalWeight * 100)}% (Target: 100%)</span>
+                <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                <span className="text-amber-600 dark:text-amber-400">Weight: {Math.round(totalWeight * 100)}% (Target: 100%)</span>
               </>
             )}
           </div>

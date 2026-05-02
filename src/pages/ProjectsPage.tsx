@@ -407,7 +407,7 @@ export default function ProjectsPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-foreground">Projects</h1>
-              <p className="text-xs text-muted-foreground">Manage all Vizzlo projects with QMS compliance</p>
+              <p className="text-xs text-muted-foreground">Manage all Vezloo projects with QMS compliance</p>
             </div>
           </div>
           <Button 

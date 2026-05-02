@@ -1,386 +1,386 @@
-# Vezloo QMS Suite - دليل المشروع الشامل
+# Vezloo QMS Suite — Comprehensive Project Guide
 
-> **آخر تحديث:** 2026-04-19
-> **الإصدار:** v2.5.0
-> **المسار:** `/home/kepa/qms-personal/`
+> **Last Updated:** 2026-04-19
+> **Version:** v2.5.0
+> **Path:** `/home/kepa/qms-personal/`
 
 ---
 
-## 1. نظرة عامة
+## 1. Overview
 
-نظام إدارة الجودة (QMS) متوافق مع ISO 9001:2015. التطبيق بيوفر أدوات كاملة لإدارة الوثائق، المراجعات، سجلات المخاطر، CAPA، خرائط العمليات، والإجراءات التشغيلية.
+ISO 9001:2015 compliant Quality Management System (QMS). The application provides complete tools for document management, reviews, risk records, CAPA, process interaction maps, and operational procedures.
 
-### التكنولوجيا
-| التقنية | الاستخدام |
+### Technology Stack
+| Technology | Usage |
 |---|---|
-| React 18 + TypeScript | الواجهة الأمامية |
-| Vite 7.3 (SWC) | البناء والتطوير |
-| Tailwind CSS 3.4 + shadcn/ui | التنسيق والمكونات |
-| @tanstack/react-query 5 | إدارة البيانات وcaching |
-| Supabase | المصادقة + قاعدة البيانات + Realtime |
-| Google Sheets API | المخزن الأساسي لبيانات QMS |
-| Google Drive API | رفع وتصفح الملفات |
-| Express 5.2 | خادم OAuth محلي (port 3001) |
-| Vercel | النشر |
+| React 18 + TypeScript | Frontend |
+| Vite 7.3 (SWC) | Build & development |
+| Tailwind CSS 3.4 + shadcn/ui | Styling & components |
+| @tanstack/react-query 5 | Data management & caching |
+| Supabase | Authentication + Database + Realtime |
+| Google Sheets API | Primary QMS data store |
+| Google Drive API | File upload & browsing |
+| Express 5.2 | Local OAuth server (port 3001) |
+| Vercel | Deployment |
 
-### الخطوط
-- **Outfit** - خط أساسي (sans)
-- **JetBrains Mono** - خط برمجي (mono)
+### Fonts
+- **Outfit** — Base font (sans)
+- **JetBrains Mono** — Code font (mono)
 
 ---
 
-## 2. هيكل الملفات
+## 2. File Structure
 
 ```
 src/
-├── App.tsx                    # التطبيق الرئيسي: providers + routing + lazy loading
-├── App.css                    # أنماط التطبيق (CSS vars فقط)
-├── main.tsx                   # نقطة الدخول
-├── index.css                  # متغيرات الثيم: :root (فاتح) + .dark (داكن)
+├── App.tsx                    # Main app: providers + routing + lazy loading
+├── App.css                    # App styles (CSS vars only)
+├── main.tsx                   # Entry point
+├── index.css                  # Theme variables: :root (light) + .dark (dark)
 │
 ├── assets/
-│   ├── logo.png               # شعار Vezloo Group
-│   └── qms-logo.png           # شعار QMS Suite
+│   ├── logo.png               # Vezloo Group logo
+│   └── qms-logo.png           # QMS Suite logo
 │
 ├── integrations/
 │   └── supabase/
-│       ├── client.ts          # إعداد عميل Supabase (env vars)
-│       └── types.ts           # أنواع قاعدة البيانات (Auto-generated)
+│       ├── client.ts          # Supabase client setup (env vars)
+│       └── types.ts           # Database types (Auto-generated)
 │
-├── pages/                     # ← كل الصفحات هنا
-│   ├── Index.tsx               # لوحة التحكم الرئيسية (Dashboard)
-│   ├── ModulePage.tsx          # صفحة الموديول (مبيعات، عمليات، جودة...)
-│   ├── RecordDetail.tsx        # تفاصيل سجل واحد
-│   ├── AuditPage.tsx           # لوحة المراجعة (5 تبويبات)
-│   ├── ArchivePage.tsx         # أرشيف Google Drive
-│   ├── RiskManagementPage.tsx  # إدارة المخاطر (3 تبويبات)
-│   ├── RiskRegisterPage.tsx    # سجل المخاطر (مستقل)
-│   ├── CAPARegisterPage.tsx    # سجل CAPA (مستقل)
-│   ├── ProcessInteractionPage.tsx # خريطة تفاعل العمليات (مستقل)
-│   ├── ActivityPage.tsx        # آخر الأنشطة
-│   ├── ProceduresPage.tsx      # الإجراءات الرقمية + أرشيف Drive
-│   ├── ISOManualPage.tsx       # دليل ISO 9001:2015
-│   ├── ProjectsPage.tsx        # نظرة عامة على المشاريع
-│   ├── ProjectDetailPage.tsx   # تفاصيل مشروع واحد
-│   ├── AdminAccounts.tsx       # إدارة المستخدمين (admin فقط)
-│   ├── Login.tsx               # تسجيل الدخول
-│   ├── Register.tsx            # التسجيل (يحتاج موافقة admin)
-│   ├── AuthCallback.tsx        # معالج OAuth callback
-│   └── NotFound.tsx             # صفحة 404
+├── pages/                     # ← All pages here
+│   ├── Index.tsx               # Main Dashboard
+│   ├── ModulePage.tsx          # Module page (Sales, Operations, Quality...)
+│   ├── RecordDetail.tsx        # Single record detail
+│   ├── AuditPage.tsx           # Audit panel (5 tabs)
+│   ├── ArchivePage.tsx         # Google Drive archive
+│   ├── RiskManagementPage.tsx  # Risk management (3 tabs)
+│   ├── RiskRegisterPage.tsx    # Risk register (standalone)
+│   ├── CAPARegisterPage.tsx    # CAPA register (standalone)
+│   ├── ProcessInteractionPage.tsx # Process interaction map (standalone)
+│   ├── ActivityPage.tsx        # Recent activity
+│   ├── ProceduresPage.tsx      # Digital procedures + Drive archive
+│   ├── ISOManualPage.tsx       # ISO 9001:2015 manual
+│   ├── ProjectsPage.tsx        # Project overview
+│   ├── ProjectDetailPage.tsx   # Single project detail
+│   ├── AdminAccounts.tsx       # User management (admin only)
+│   ├── Login.tsx               # Login
+│   ├── Register.tsx            # Registration (requires admin approval)
+│   ├── AuthCallback.tsx        # OAuth callback handler
+│   └── NotFound.tsx            # 404 page
 │
-├── hooks/                     # ← كل الـ hooks
-│   ├── useAuth.tsx             # سياق المصادقة (Supabase + fallback محلي)
-│   ├── useTheme.tsx            # سياق الثيم (فاتح/داكن/تلقائي)
-│   ├── useQMSData.ts           # React Query لبيانات Google Sheets
-│   ├── useRiskData.ts          # React Query لسجل المخاطر
-│   ├── useCAPAData.ts          # React Query لسجل CAPA
-│   ├── useProcessData.ts       # React Query لخرائط العمليات
-│   ├── useProceduresData.ts    # حالة محلية + localStorage للإجراءات
-│   ├── useManualData.ts        # حالة محلية + localStorage لدليل ISO
-│   ├── useDebounce.ts          # debounce utility
-│   ├── useFilter.ts            # إدارة حالة الفلترة
-│   ├── useHotkeys.ts            # اختصارات لوحة المفاتيح
-│   ├── use-mobile.tsx           # كشف الشاشات الصغيرة
-│   ├── useNotifications.ts      # إشعارات Realtime من Supabase
-│   └── use-toast.ts            # toast قديم (shadcn)
+├── hooks/                     # ← All hooks
+│   ├── useAuth.tsx             # Auth context (Supabase + local fallback)
+│   ├── useTheme.tsx            # Theme context (light/dark/auto)
+│   ├── useQMSData.ts           # React Query for Google Sheets data
+│   ├── useRiskData.ts          # React Query for risk register
+│   ├── useCAPAData.ts          # React Query for CAPA register
+│   ├── useProcessData.ts       # React Query for process maps
+│   ├── useProceduresData.ts    # Local state + localStorage for procedures
+│   ├── useManualData.ts        # Local state + localStorage for ISO manual
+│   ├── useDebounce.ts          # General debounce utility
+│   ├── useFilter.ts            # Filter state management
+│   ├── useHotkeys.ts            # Keyboard shortcuts
+│   ├── use-mobile.tsx           # Mobile screen detection
+│   ├── useNotifications.ts      # Realtime notifications from Supabase
+│   └── use-toast.ts            # Legacy toast (shadcn)
 │
 ├── components/
 │   ├── layout/
-│   │   ├── AppShell.tsx        # هيكل الصفحة: TopNav + Breadcrumbs + محتوى + Footer
-│   │   ├── TopNav.tsx          # شريط التنقل العلوي
-│   │   ├── Header.tsx          # Header قديم
-│   │   ├── Sidebar.tsx          # Sidebar قديم (مش مستخدم حالياً)
-│   │   ├── Footer.tsx           # تذييل الصفحة
-│   │   ├── Breadcrumbs.tsx      # مسار التنقل
-│   │   └── NotificationBell.tsx # جرس الإشعارات (Realtime)
+│   │   ├── AppShell.tsx        # Page structure: TopNav + Breadcrumbs + Content + Footer
+│   │   ├── TopNav.tsx          # Top navigation bar
+│   │   ├── Header.tsx          # Legacy header
+│   │   ├── Sidebar.tsx          # Legacy sidebar (currently unused)
+│   │   ├── Footer.tsx           # Page footer
+│   │   ├── Breadcrumbs.tsx      # Breadcrumb navigation
+│   │   └── NotificationBell.tsx # Notification bell (Realtime)
 │   │
 │   ├── auth/
 │   │   └── Guards.tsx          # RequireAuth + RequireRole
 │   │
 │   ├── dashboard/
-│   │   ├── ModuleCard.tsx      # بطاقة الموديول
-│   │   ├── StatusCard.tsx      # بطاقة KPI
-│   │   ├── RecentActivity.tsx  # آخر الأنشطة
-│   │   ├── AuditReadiness.tsx  # مؤشر جاهزية المراجعة
-│   │   ├── QuickActions.tsx    # أزرار الإجراءات السريعة
-│   │   └── PendingActions.tsx  # إجراءات معلقة
+│   │   ├── ModuleCard.tsx      # Module card
+│   │   ├── StatusCard.tsx      # KPI card
+│   │   ├── RecentActivity.tsx  # Recent activity
+│   │   ├── AuditReadiness.tsx  # Audit readiness indicator
+│   │   ├── QuickActions.tsx    # Quick action buttons
+│   │   └── PendingActions.tsx  # Pending actions
 │   │
 │   ├── records/
-│   │   ├── RecordCard.tsx      # بطاقة السجل
-│   │   ├── RecordBrowser.tsx   # متصفح ملفات السجل
-│   │   ├── RecordsTable.tsx    # جدول/بطاقات سجلات المراجعة
-│   │   ├── AddRecordModal.tsx  # نافذة إضافة سجل
-│   │   ├── AddFormModal.tsx    # نافذة إضافة نموذج
-│   │   ├── EditFrequencyModal.tsx  # تعديل تكرار التعبئة
-│   │   └── EditMetadataModal.tsx   # تعديل بيانات السجل
+│   │   ├── RecordCard.tsx      # Record card
+│   │   ├── RecordBrowser.tsx   # Record file browser
+│   │   ├── RecordsTable.tsx    # Audit records table/cards
+│   │   ├── AddRecordModal.tsx  # Add record window
+│   │   ├── AddFormModal.tsx    # Add form window
+│   │   ├── EditFrequencyModal.tsx  # Edit fill frequency
+│   │   └── EditMetadataModal.tsx   # Edit record metadata
 │   │
 │   ├── record-detail/
-│   │   ├── RecordHeader.tsx    # رأس صفحة التفاصيل
-│   │   ├── FileStats.tsx      # إحصائيات الملفات
-│   │   ├── TechnicalSpec.tsx  # المواصفات التقنية
-│   │   ├── DocumentLinks.tsx  # روابط القوالب والمجلدات
-│   │   ├── CompliancePanel.tsx # لوالة حالة المراجعة
-│   │   ├── ReviewPanel.tsx    # لوحة المراجع
-│   │   └── RecordTimeline.tsx # خط زمني للسجل
+│   │   ├── RecordHeader.tsx    # Detail page header
+│   │   ├── FileStats.tsx      # File statistics
+│   │   ├── TechnicalSpec.tsx  # Technical specifications
+│   │   ├── DocumentLinks.tsx  # Template and folder links
+│   │   ├── CompliancePanel.tsx # Review status panel
+│   │   ├── ReviewPanel.tsx    # Reviewer panel
+│   │   └── RecordTimeline.tsx # Record timeline
 │   │
 │   ├── audit/
-│   │   ├── AuditCharts.tsx     # رسوم بيانية للمراجعة
-│   │   ├── AuditFilters.tsx    # فلاتر صفحة المراجعة
-│   │   └── AutomatedAuditModal.tsx  # فحص مراجعة آلي (3 مراحل)
+│   │   ├── AuditCharts.tsx     # Audit charts
+│   │   ├── AuditFilters.tsx    # Audit page filters
+│   │   └── AutomatedAuditModal.tsx  # Automated audit check (3 phases)
 │   │
 │   ├── risk/
-│   │   ├── RiskRegisterTab.tsx      # جدول سجل المخاطر
-│   │   ├── CapaRegisterTab.tsx      # جدول سجل CAPA
-│   │   ├── ProcessInteractionTab.tsx # جدول تفاعل العمليات
-│   │   ├── RiskHeatMap.tsx          # خريطة حرارية 5×5
-│   │   └── RiskStats.tsx            # إحصائيات المخاطر
+│   │   ├── RiskRegisterTab.tsx      # Risk register table
+│   │   ├── CapaRegisterTab.tsx      # CAPA register table
+│   │   ├── ProcessInteractionTab.tsx # Process interaction table
+│   │   ├── RiskHeatMap.tsx          # 5×5 heat map
+│   │   └── RiskStats.tsx            # Risk statistics
 │   │
 │   ├── settings/
-│   │   └── SettingsModal.tsx   # إعدادات (حساب، مظهر، ألوان، تشخيص)
+│   │   └── SettingsModal.tsx   # Settings (account, appearance, colors, diagnostics)
 │   │
-│   ├── ui/                     # 50+ مكون shadcn/ui (button, card, dialog, etc.)
-│   ├── ErrorBoundary.tsx       # حد حدود الأخطاء
-│   └── NavLink.tsx             # رابط تنقل
+│   ├── ui/                     # 50+ shadcn/ui components (button, card, dialog, etc.)
+│   ├── ErrorBoundary.tsx       # Error boundary
+│   └── NavLink.tsx             # Navigation link
 │
-├── lib/                        # ← الخدمات والأدوات
-│   ├── auth.ts                  # مساعد رمز OAuth
-│   ├── googleSheets.ts          # خدمة Google Sheets API
-│   ├── driveService.ts          # خدمة Google Drive API
-│   ├── riskRegisterService.ts   # خدمة سجل المخاطر (Sheets)
-│   ├── capaRegisterService.ts   # خدمة سجل CAPA (Sheets)
-│   ├── processInteractionService.ts # خدمة تفاعل العمليات (Sheets)
-│   ├── auditCheckService.ts     # فحص مراجعة آلي (3 مراحل)
-│   ├── statusService.ts         # إدارة حالة السجلات
-│   ├── ManualContent.ts         # محتوى دليل ISO 9001:2015
-│   ├── ProceduresContent.ts    # محتوى الإجراءات الرقمية
-│   ├── exportUtils.ts           # أدوات التصدير (CSV/DOCX)
-│   ├── validation.ts            # أدوات التحقق من النماذج
+├── lib/                        # ← Services and utilities
+│   ├── auth.ts                  # OAuth token helper
+│   ├── googleSheets.ts          # Google Sheets API service
+│   ├── driveService.ts          # Google Drive API service
+│   ├── riskRegisterService.ts   # Risk register service (Sheets)
+│   ├── capaRegisterService.ts   # CAPA register service (Sheets)
+│   ├── processInteractionService.ts # Process interaction service (Sheets)
+│   ├── auditCheckService.ts     # Automated audit check (3 phases)
+│   ├── statusService.ts         # Record status management
+│   ├── ManualContent.ts         # ISO 9001:2015 manual content
+│   ├── ProceduresContent.ts    # Digital procedures content
+│   ├── exportUtils.ts           # Export utilities (CSV/DOCX)
+│   ├── validation.ts            # Form validation utilities
 │   └── utils.ts                 # cn() utility (clsx + tailwind-merge)
 │
-└── server/                      # خادم OAuth محلي
+└── server/                      # Local OAuth server
     └── local.js                 # Express server (port 3001)
 ```
 
 ---
 
-## 3. الصفحات والمسارات
+## 3. Pages and Routes
 
-| المسار | الصفحة | الوصف |
+| Route | Page | Description |
 |---|---|---|
-| `/` | Dashboard | لوحة التحكم: KPIs، بطاقات الموديولات، جاهزية المراجعة |
-| `/login` | Login | تسجيل الدخول (بريد/كلمة مرور + Google OAuth) |
-| `/register` | Register | تسجيل حساب جديد (بانتظار موافقة admin) |
-| `/auth/callback` | AuthCallback | معالج OAuth callback |
-| `/module/:moduleId` | ModulePage | تفاصيل موديول (مبيعات، عمليات، جودة...) |
-| `/record/*` | RecordDetail | تفاصيل سجل واحد مع لوحات المراجعة |
-| `/audit` | AuditPage | لوحة المراجعة (5 تبويبات + فحص آلي) |
-| `/projects` | ProjectsPage | نظرة عامة على المشاريع |
-| `/project/:projectName` | ProjectDetailPage | تفاصيل مشروع واحد |
-| `/archive` | ArchivePage | أرشيف ملفات Drive (استعادة/حذف) |
-| `/risk-management` | RiskManagementPage | إدارة المخاطر (3 تبويبات) |
-| `/risk` | RiskRegisterPage | سجل المخاطر (مستقل) |
-| `/capa` | CAPARegisterPage | سجل CAPA (مستقل) |
-| `/process-interaction` | ProcessInteractionPage | خريطة تفاعل العمليات (مستقل) |
-| `/activity` | ActivityPage | آخر الأنشطة |
-| `/procedures` | ProceduresPage | الإجراءات الرقمية + أرشيف Drive |
-| `/iso-manual` | ISOManualPage | دليل ISO 9001:2015 |
-| `/admin/accounts` | AdminAccounts | إدارة المستخدمين (admin فقط) |
+| `/` | Dashboard | KPIs, module cards, audit readiness |
+| `/login` | Login | Login (email/password + Google OAuth) |
+| `/register` | Register | New account registration (pending admin approval) |
+| `/auth/callback` | AuthCallback | OAuth callback handler |
+| `/module/:moduleId` | ModulePage | Module details (Sales, Operations, Quality...) |
+| `/record/*` | RecordDetail | Single record detail with review panels |
+| `/audit` | AuditPage | Audit panel (5 tabs + automated check) |
+| `/projects` | ProjectsPage | Project overview |
+| `/project/:projectName` | ProjectDetailPage | Single project detail |
+| `/archive` | ArchivePage | Drive file archive (restore/delete) |
+| `/risk-management` | RiskManagementPage | Risk management (3 tabs) |
+| `/risk` | RiskRegisterPage | Risk register (standalone) |
+| `/capa` | CAPARegisterPage | CAPA register (standalone) |
+| `/process-interaction` | ProcessInteractionPage | Process interaction map (standalone) |
+| `/activity` | ActivityPage | Recent activity |
+| `/procedures` | ProceduresPage | Digital procedures + Drive archive |
+| `/iso-manual` | ISOManualPage | ISO 9001:2015 manual |
+| `/admin/accounts` | AdminAccounts | User management (admin only) |
 
-### نظام التوجيه
-- **مسارات عامة:** `/login`, `/register`, `/auth/callback`
-- **مسارات محمية (RequireAuth):** كل المسارات التانية
-- **مسارات admin فقط (RequireRole):** `/admin/accounts`
-- كل الصفحات **lazy-loaded** عبر `React.lazy()` + `Suspense`
-- ترتيب الـ Providers: `QueryClientProvider` > `ErrorBoundary` > `ThemeProvider` > `AuthProvider` > `TooltipProvider` > `BrowserRouter`
+### Routing System
+- **Public routes:** `/login`, `/register`, `/auth/callback`
+- **Protected routes (RequireAuth):** All other routes
+- **Admin-only routes (RequireRole):** `/admin/accounts`
+- All pages are **lazy-loaded** via `React.lazy()` + `Suspense`
+- Provider order: `QueryClientProvider` > `ErrorBoundary` > `ThemeProvider` > `AuthProvider` > `TooltipProvider` > `BrowserRouter`
 
 ---
 
-## 4. نظام المصادقة
+## 4. Authentication System
 
-### مسار تسجيل الدخول
+### Login Flow
 ```
-مستخدم → Login.tsx → useAuth.login()
-  ├── بريد/كلمة مرور → Supabase Auth (signInWithPassword)
+User → Login.tsx → useAuth.login()
+  ├── Email/password → Supabase Auth (signInWithPassword)
   ├── Google OAuth → Express Proxy → Google → callback → Supabase session
-  └── Fallback محلي → SHA-256 + localStorage (معطل افتراضياً)
+  └── Local fallback → SHA-256 + localStorage (disabled by default)
 ```
 
-### مسار التسجيل
+### Registration Flow
 ```
-مستخدم → Register.tsx → useAuth.register()
+User → Register.tsx → useAuth.register()
   → Supabase Auth (signUp) + profiles row (is_active: false) + user_roles row (role: "user")
-  → في انتظار موافقة Admin
+  → Waiting for Admin approval
 ```
 
-### الجداول المعنية
+### Database Tables
 - **profiles**: id, email, display_name, is_active, user_id, password (legacy)
 - **user_roles**: id, user_id, role (admin/moderator/user/manager/auditor)
 - **notifications**: id, user_id, type, title, message, read, data (jsonb)
 
-### الحرس (Guards)
-- `RequireAuth` → يحوّل لـ `/login` لو مش مسجل دخول
-- `RequireRole` → يحوّل لـ `/` لو مش عنده الصلاحية
+### Guards
+- `RequireAuth` → redirects to `/login` if not authenticated
+- `RequireRole` → redirects to `/` if insufficient permissions
 
-### خادم OAuth المحلي (`server/local.js`)
-- `GET /api/auth` → يبدأ Google OAuth flow
-- `GET /api/auth/callback` → يستقبل callback
-- `GET /api/token` → يرجع رمز OAuth المحفوظ
+### Local OAuth Server (`server/local.js`)
+- `GET /api/auth` → starts Google OAuth flow
+- `GET /api/auth/callback` → receives callback
+- `GET /api/token` → returns saved OAuth token
 
 ---
 
-## 5. قاعدة البيانات
+## 5. Database
 
-### Supabase (مصادقة + مستخدمين + إشعارات)
+### Supabase (Authentication + Users + Notifications)
 ```sql
--- profiles: بيانات المستخدمين
+-- profiles: user data
 id uuid PK, email text, display_name text, is_active boolean, user_id text, password text (legacy)
 
--- user_roles: صلاحيات المستخدمين
+-- user_roles: user permissions
 id uuid PK, user_id text, role app_role (admin|moderator|user|manager|auditor)
 
--- notifications: إشعارات Realtime
+-- notifications: Realtime notifications
 id uuid PK, user_id uuid, type text, title text, message text, read boolean, data jsonb
 ```
 
-### Google Sheets (البيانات الرئيسية)
-| الورقة | الوظيفة | المصدر |
+### Google Sheets (Primary Data)
+| Sheet | Function | Source |
 |---|---|---|
-| Data | سجلات QMS الرئيسية (35+ نموذج لكل موديول) | `VITE_SPREADSHEET_ID` |
-| Risk Register | سجل المخاطر | Spreadsheet ID ثابت |
-| CAPA Register | سجل الإجراءات التصحيحية | نفس Spreadsheet ID |
-| Process Interaction Sheet | خريطة تفاعل العمليات | `VITE_SPREADSHEET_ID` |
+| Data | Main QMS records (35+ forms per module) | `VITE_SPREADSHEET_ID` |
+| Risk Register | Risk records | Fixed Spreadsheet ID |
+| CAPA Register | Corrective action records | Same Spreadsheet ID |
+| Process Interaction Sheet | Process interaction map | `VITE_SPREADSHEET_ID` |
 
-> **ملاحظة مهمة:** Google Sheets هو المخزن الأساسي لبيانات QMS. Supabase بيدير بس المصادقة والملفات الشخصية والإشعارات.
-
----
-
-## 6. نظام الثيم
-
-### الثيم المتحكم (Controlled Obsidian)
-- **ثيم أساسي:** داكن مع لمسات neon-cyan و neon-violet
-- **نظام الألوان:** CSS variables مع `hsl(var(--*))`
-- **الملف الأساسي:** `src/index.css` - فيه `:root` (فاتح) + `.dark` (داكن)
-- **التبديل:** `useTheme.tsx` بيبدل class `dark`/`light` على `<html>`
-- **ألوان التمييز:** 8 ألوان ممكنة، محفوظة في `localStorage.getItem('accentColor')` ومطبقة عبر `data-accent` على `<html>`
-- **إعدادات الألوان:** من `SettingsModal.tsx`
-
-### معايير التصميم
-- Sidebar: `w-60` ممتد / `w-[60px]` مطوي
-- هوامش الصفحة: `md:ml-[60px]` مطوي / `md:ml-60` ممتد
-- أقصى عرض: `max-w-[1400px] mx-auto`
-- عنوان الصفحة: `text-2xl font-bold tracking-tight`
-- بطاقات: `rounded-xl` عادية / `rounded-2xl` مميزة
-- كل صفحة فيها: TopNav + Breadcrumbs + Footer
+> **Important note:** Google Sheets is the primary data store for QMS data. Supabase only manages authentication, profiles, and notifications.
 
 ---
 
-## 7. تدفق البيانات (Data Flow)
+## 6. Theme System
+
+### Controlled Obsidian Theme
+- **Base theme:** Dark with neon-cyan and neon-violet accents
+- **Color system:** CSS variables with `hsl(var(--*))`
+- **Base file:** `src/index.css` — contains `:root` (light) + `.dark` (dark)
+- **Toggle:** `useTheme.tsx` toggles `dark`/`light` class on `<html>`
+- **Accent colors:** 8 possible colors, saved in `localStorage.getItem('accentColor')`, applied via `data-accent` on `<html>`
+- **Color settings:** From `SettingsModal.tsx`
+
+### Design Standards
+- Sidebar: `w-60` expanded / `w-[60px]` collapsed
+- Page margins: `md:ml-[60px]` collapsed / `md:ml-60` expanded
+- Max width: `max-w-[1400px] mx-auto`
+- Page title: `text-2xl font-bold tracking-tight`
+- Cards: `rounded-xl` standard / `rounded-2xl` featured
+- Every page includes: TopNav + Breadcrumbs + Footer
+
+---
+
+## 7. Data Flow
 
 ```
-Google Sheets API  →  googleSheets.ts  →  useQMSData (React Query)  →  صفحات/مكونات
-Google Drive API   →  driveService.ts   →  useQMSData / استدعاءات مباشرة       →  صفحات/مكونات
-Risk Sheet         →  riskRegisterService →  useRiskData (React Query)     →  صفحات المخاطر
-CAPA Sheet         →  capaRegisterService →  useCAPAData (React Query)    →  صفحات CAPA
-Process Sheet       →  processInteractionService →  useProcessData          →  صفحات العمليات
+Google Sheets API  →  googleSheets.ts  →  useQMSData (React Query)  →  Pages/Components
+Google Drive API   →  driveService.ts   →  useQMSData / direct calls       →  Pages/Components
+Risk Sheet         →  riskRegisterService →  useRiskData (React Query)     →  Risk pages
+CAPA Sheet         →  capaRegisterService →  useCAPAData (React Query)    →  CAPA pages
+Process Sheet       →  processInteractionService →  useProcessData          →  Process pages
 Supabase Auth      →  useAuth (AuthProvider)  →  Guards, Login, Register
 Supabase Realtime  →  useNotifications       →  NotificationBell
-LocalStorage       →  useProceduresData/useManualData →  صفحات الإجراءات والدليل
-OAuth Proxy        →  server/local.js (Express)  →  getAccessToken()  →  عمليات الكتابة على Drive/Sheets
+LocalStorage       →  useProceduresData/useManualData →  Procedures and Manual pages
+OAuth Proxy        →  server/local.js (Express)  →  getAccessToken()  →  Drive/Sheets write operations
 ```
 
-### عمليات القراءة والكتابة
-- **قراءة Google Sheets:** API Key (للقراءة فقط)
-- **كتابة Google Sheets:** OAuth access token (لازم يكون مسجل بـ Google)
-- **التطبيق بيعمل تحذير** لو عمليات الكتابة فشلت بسبب عدم وجود OAuth
+### Read and Write Operations
+- **Google Sheets Read:** API Key (read-only)
+- **Google Sheets Write:** OAuth access token (requires Google login)
+- **The app shows a warning** if write operations fail due to missing OAuth
 
 ---
 
-## 8. الـ Hooks
+## 8. Hooks
 
-| Hook | الملف | الوظيفة |
+| Hook | File | Function |
 |---|---|---|
-| `useAuth` | `useAuth.tsx` | سياق المصادقة الكامل: login, logout, register, إدارة المستخدمين |
-| `useTheme` | `useTheme.tsx` | سياق الثيم: فاتح/داكن/تلقائي مع localStorage |
-| `useQMSData` | `useQMSData.ts` | React Query لبيانات QMS (60s refetch, 30s stale) |
-| `useUpdateRecord` | `useQMSData.ts` | Mutation لتحديث خلايا Sheet |
-| `useDeleteRecord` | `useQMSData.ts` | Mutation لحذف صفوف |
-| `useRiskData` | `useRiskData.ts` | React Query لسجل المخاطر (إضافة/تحديث/جلب) |
-| `useCAPAData` | `useCAPAData.ts` | React Query لسجل CAPA |
-| `useProcessData` | `useProcessData.ts` | React Query لخرائط العمليات |
-| `useProceduresData` | `useProceduresData.ts` | حالة محلية + localStorage للإجراءات |
-| `useManualData` | `useManualData.ts` | حالة محلية + localStorage لدليل ISO |
-| `useNotifications` | `useNotifications.ts` | إشعارات Realtime من Supabase |
-| `useDebounce` | `useDebounce.ts` | debounce عام |
-| `useFilter` | `useFilter.ts` | إدارة حالة الفلترة |
-| `useHotkeys` | `useHotkeys.ts` | اختصارات لوحة المفاتيح |
-| `use-mobile` | `use-mobile.tsx` | كشف الشاشات الصغيرة |
+| `useAuth` | `useAuth.tsx` | Complete auth context: login, logout, register, user management |
+| `useTheme` | `useTheme.tsx` | Theme context: light/dark/auto with localStorage |
+| `useQMSData` | `useQMSData.ts` | React Query for QMS data (60s refetch, 30s stale) |
+| `useUpdateRecord` | `useQMSData.ts` | Mutation for sheet cell updates |
+| `useDeleteRecord` | `useQMSData.ts` | Mutation for row deletion |
+| `useRiskData` | `useRiskData.ts` | React Query for risk register (add/update/fetch) |
+| `useCAPAData` | `useCAPAData.ts` | React Query for CAPA register |
+| `useProcessData` | `useProcessData.ts` | React Query for process maps |
+| `useProceduresData` | `useProceduresData.ts` | Local state + localStorage for procedures |
+| `useManualData` | `useManualData.ts` | Local state + localStorage for ISO manual |
+| `useNotifications` | `useNotifications.ts` | Realtime notifications from Supabase |
+| `useDebounce` | `useDebounce.ts` | General debounce |
+| `useFilter` | `useFilter.ts` | Filter state management |
+| `useHotkeys` | `useHotkeys.ts` | Keyboard shortcuts |
+| `use-mobile` | `use-mobile.tsx` | Mobile screen detection |
 
 ---
 
-## 9. متغيرات البيئة
+## 9. Environment Variables
 
-| المتغير | الوظيفة |
+| Variable | Function |
 |---|---|
-| `VITE_SUPABASE_URL` | رابط مشروع Supabase |
-| `VITE_SUPABASE_ANON_KEY` | مفتاح Supabase العام |
-| `VITE_GOOGLE_API_KEY` | مفتاح Google API (قراءة Sheets + Drive) |
-| `VITE_SPREADSHEET_ID` | معرف جدول Google Sheets الرئيسي |
-| `VITE_PROCEDURES_FOLDER_ID` | معرف مجلد Google Drive للإجراءات |
-| `VITE_AUTH_LOCAL_DISABLED` | تعطيل المصادقة المحلية (افتراضي: "true") |
-| `VITE_AUTH_SALT` | ملح تشفير كلمات المرور المحلية |
-| `GOOGLE_CLIENT_ID` | معرف عميل Google OAuth (خادم) |
-| `GOOGLE_CLIENT_SECRET` | سر عميل Google OAuth (خادم) |
-| `GOOGLE_REDIRECT_URI` | رابط إعادة التوجيه لـ OAuth |
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase public key |
+| `VITE_GOOGLE_API_KEY` | Google API key (Sheets + Drive read) |
+| `VITE_SPREADSHEET_ID` | Main Google Sheets spreadsheet ID |
+| `VITE_PROCEDURES_FOLDER_ID` | Google Drive folder ID for procedures |
+| `VITE_AUTH_LOCAL_DISABLED` | Disable local auth (default: "true") |
+| `VITE_AUTH_SALT` | Local password encryption salt |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (server) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (server) |
+| `GOOGLE_REDIRECT_URI` | OAuth redirect URI |
 
 ---
 
-## 10. ملاحظات مهمة
+## 10. Important Notes
 
-### الأمان
-- **لا تكتب API keys في الكود أبداً** - استخدم `import.meta.env.VITE_*`
-- عمليات الكتابة على Google Sheets/Drive لازم تكون عبر OAuth
-- `admin-update-password` هو Supabase Edge Function لإعادة تعيين كلمات المرور
+### Security
+- **Never write API keys in code** — use `import.meta.env.VITE_*`
+- Google Sheets/Drive write operations must go through OAuth
+- `admin-update-password` is a Supabase Edge Function for password resets
 
-### الفحص الآلي (Automated Audit Check)
-- الملف: `src/lib/auditCheckService.ts`
-- 3 مراحل: فحص سلامة السجلات، فحص تسلسل الملفات، فحص أسماء الملفات
+### Automated Audit Check
+- File: `src/lib/auditCheckService.ts`
+- 3 phases: Record integrity check, file sequence check, file naming check
 
-### العلامة التجارية
-- الاسم: **Vezloo QMS Suite**
-- المطور: **Ahmed Khaled**
-- SpreadSheet ID ثابت لـ Risk/CAPA: `11dGB-fG2UMqsdqc182PsY-K6S_19FKc8bsZLHlic18M`
+### Brand Identity
+- Name: **Vezloo QMS Suite**
+- Developer: **Ahmed Khaled**
+- Fixed Spreadsheet ID for Risk/CAPA: `11dGB-fG2UMqsdqc182PsY-K6S_19FKc8bsZLHlic18M`
 
-### البناء
+### Build
 ```bash
 npm install && npx vite build
 ```
 
-### نظام الإشعارات
-- موحد على `sonner` (تم إزالة shadcn Toaster من App.tsx)
-- `sonner.tsx` بيستخدم `useTheme` المحلي (مش next-themes)
+### Notification System
+- Unified on `sonner` (shadcn Toaster removed from App.tsx)
+- `sonner.tsx` uses local `useTheme` (not next-themes)
 
 ---
 
-## 11. ملفات تم تعديلها في آخر تحديث للثيم (2026-04-18)
+## 11. Files Modified in Last Theme Update (2026-04-18)
 
-- `src/index.css` — إعادة بناء كاملة مع ثيم فاتح/داكن
-- `tailwind.config.ts` — مراجع CSS variables + ألوان الموديولات
-- `src/App.css` — إزالة تعريفات Inter/hex المتعارضة
-- `src/hooks/useTheme.tsx` — إزالة themeVars الميتة
-- `src/components/ui/sonner.tsx` — إصلاح الاستيراد لـ useTheme المحلي
-- `src/components/records/RecordCard.tsx` — استبدال كل الألوان الثابتة
-- `src/pages/ProceduresPage.tsx` — مفتاح API في env var + إضافة Breadcrumbs/Footer
-- `src/pages/ISOManualPage.tsx` — إضافة Breadcrumbs/Footer
-- `src/pages/ActivityPage.tsx` — إضافة Breadcrumbs
-- `src/pages/ProjectsPage.tsx` — توحيد التخطيط
-- `src/pages/ModulePage.tsx` — توحيد التخطيط
-- `src/pages/ArchivePage.tsx` — أيقونات Lucide بدل Emoji، toast → sonner
-- `src/pages/AuditPage.tsx` — إصلاح ألوان emerald الثابتة
-- `src/pages/AuthCallback.tsx` — إصلاح ألوان ثابتة
-- `src/pages/Register.tsx` — إصلاح orange-500
-- `src/components/ui/LoadingSpinner.tsx` — إصلاح مسار الاستيراد
-- `src/App.tsx` — إزالة shadcn Toaster، الاحتفاظ بـ Sonner
+- `src/index.css` — Complete rebuild with light/dark theme
+- `tailwind.config.ts` — CSS variable references + module colors
+- `src/App.css` — Removed conflicting Inter/hex definitions
+- `src/hooks/useTheme.tsx` — Removed dead themeVars
+- `src/components/ui/sonner.tsx` — Fixed import to local useTheme
+- `src/components/records/RecordCard.tsx` — Replaced all hardcoded colors
+- `src/pages/ProceduresPage.tsx` — API key in env var + added Breadcrumbs/Footer
+- `src/pages/ISOManualPage.tsx` — Added Breadcrumbs/Footer
+- `src/pages/ActivityPage.tsx` — Added Breadcrumbs
+- `src/pages/ProjectsPage.tsx` — Unified layout
+- `src/pages/ModulePage.tsx` — Unified layout
+- `src/pages/ArchivePage.tsx` — Lucide icons instead of Emoji, toast → sonner
+- `src/pages/AuditPage.tsx` — Fixed hardcoded emerald colors
+- `src/pages/AuthCallback.tsx` — Fixed hardcoded colors
+- `src/pages/Register.tsx` — Fixed orange-500
+- `src/components/ui/LoadingSpinner.tsx` — Fixed import path
+- `src/App.tsx` — Removed shadcn Toaster, kept Sonner
 
 ---
 
-> **للاستخدام:** اقرأ هذا الملف أولاً في كل محادثة جديدة عشان تفهم المشروع بسرعة بدون ما تحتاج تستكشفه من الصفر.
+> **For use:** Read this file first in every new conversation to quickly understand the project without exploring it from scratch.

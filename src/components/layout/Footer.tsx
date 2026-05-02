@@ -1,5 +1,6 @@
 import { ShieldCheck, Settings, Phone } from "lucide-react";
 import { useState } from "react";
+import pkg from "../../../package.json";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -45,7 +46,7 @@ export function Footer() {
             </div>
             <div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground/40 bg-muted/30 px-2 py-0.5 rounded-md">
               <Settings className="w-2.5 h-2.5" />
-              <span>v2.5.0</span>
+              <span>v{pkg.version}</span>
             </div>
           </div>
         </div>

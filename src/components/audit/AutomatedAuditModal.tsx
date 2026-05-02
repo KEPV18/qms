@@ -300,16 +300,16 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
   const severityIcon = (severity: IssueSeverity) => {
     switch (severity) {
       case 'critical': return <XCircle className="w-4 h-4 mt-0.5 text-destructive shrink-0" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 mt-0.5 text-orange-500 shrink-0" />;
-      case 'info': return <Info className="w-4 h-4 mt-0.5 text-blue-400 shrink-0" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4 mt-0.5 text-warning shrink-0" />;
+      case 'info': return <Info className="w-4 h-4 mt-0.5 text-info shrink-0" />;
     }
   };
 
   const severityBadge = (severity: IssueSeverity) => {
     const styles = {
       critical: "bg-red-100 text-red-700 border-red-200",
-      warning: "bg-orange-100 text-orange-700 border-orange-200",
-      info: "bg-blue-100 text-blue-600 border-blue-200",
+      warning: "bg-warning/10 text-warning border-warning/30",
+      info: "bg-blue-100 text-info border-blue-200",
     };
     return <Badge variant="secondary" className={cn("h-4 text-[7px] ml-1", styles[severity])}>{severity.toUpperCase()}</Badge>;
   };
@@ -400,7 +400,7 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
                     <div className={cn(
                       "w-12 h-12 rounded-sm flex items-center justify-center text-lg font-bold",
                       summary.healthScore >= 80 ? "bg-green-500/10 text-green-600" :
-                        summary.healthScore >= 50 ? "bg-orange-500/10 text-orange-600" :
+                        summary.healthScore >= 50 ? "bg-warning/10 text-warning" :
                           "bg-red-500/10 text-red-600"
                     )}>
                       {summary.healthScore}%
@@ -457,8 +457,8 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
                   </div>
                 </div>
                 <div className="p-2.5 rounded-sm border border-border bg-background flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-sm bg-orange-500/10 flex items-center justify-center">
-                    <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
+                  <div className="w-7 h-7 rounded-sm bg-warning/10 flex items-center justify-center">
+                    <AlertTriangle className="w-3.5 h-3.5 text-warning" />
                   </div>
                   <div>
                     <h4 className="text-lg font-bold font-heading">{severityCounts.warning}</h4>
@@ -467,7 +467,7 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
                 </div>
                 <div className="p-2.5 rounded-sm border border-border bg-background flex items-center gap-2">
                   <div className="w-7 h-7 rounded-sm bg-blue-500/10 flex items-center justify-center">
-                    <Info className="w-3.5 h-3.5 text-blue-400" />
+                    <Info className="w-3.5 h-3.5 text-info" />
                   </div>
                   <div>
                     <h4 className="text-lg font-bold font-heading">{severityCounts.info}</h4>
@@ -475,8 +475,8 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
                   </div>
                 </div>
                 <div className="p-2.5 rounded-sm border border-border bg-background flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-sm bg-orange-500/10 flex items-center justify-center">
-                    <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
+                  <div className="w-7 h-7 rounded-sm bg-warning/10 flex items-center justify-center">
+                    <AlertCircle className="w-3.5 h-3.5 text-warning" />
                   </div>
                   <div>
                     <h4 className="text-lg font-bold font-heading">{brokenSequenceCount}</h4>
@@ -585,10 +585,10 @@ export function AutomatedAuditModal({ isOpen, onClose, records }: AutomatedAudit
                                 <Badge variant="destructive" className="h-4 text-[7px]">LINK</Badge>
                               )}
                               {result.folderStatus === 'wrong_name' && (
-                                <Badge variant="secondary" className="h-4 text-[7px] bg-orange-100 text-orange-700 border-orange-200">NAME</Badge>
+                                <Badge variant="secondary" className="h-4 text-[7px] bg-warning/10 text-warning border-warning/30">NAME</Badge>
                               )}
                               {result.sequenceStatus === 'broken' && (
-                                <Badge variant="outline" className="h-4 text-[7px] border-orange-500 text-orange-600">SEQ</Badge>
+                                <Badge variant="outline" className="h-4 text-[7px] border-warning text-warning">SEQ</Badge>
                               )}
                               {result.namingStatus === 'invalid' && (
                                 <Badge variant="secondary" className="h-4 text-[7px] bg-blue-100 text-blue-600 border-blue-200">P3</Badge>

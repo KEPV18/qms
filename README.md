@@ -1,73 +1,59 @@
-# Welcome to QMS Platform
+# Vezloo QMS Suite
 
-## Project info
+> ISO 9001:2015 compliant Quality Management System — Document management, risk registers, CAPA tracking, process interaction maps, and automated audit checks.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tech Stack
 
-## How can I edit this code?
+- **Frontend:** React 18 + TypeScript + Vite 7 (SWC) + Tailwind CSS 3.4 + shadcn/ui
+- **Data:** @tanstack/react-query 5
+- **Auth:** Supabase (email/password + Google OAuth)
+- **Storage:** Google Sheets API (primary QMS data) + Google Drive API (files)
+- **Deployment:** Vercel
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use QMS Platform**
+```bash
+# Install dependencies
+npm install
 
-Simply visit the QMS Platform and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server (port 8080)
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file in the project root:
 
-**Use GitHub Codespaces**
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `VITE_GOOGLE_API_KEY` | Google API key (Sheets + Drive read) |
+| `VITE_SPREADSHEET_ID` | Main QMS Google Sheet ID |
+| `VITE_PROCEDURES_FOLDER_ID` | Google Drive folder ID for procedures |
+| `VITE_AUTH_LOCAL_DISABLED` | Disable local auth fallback (default: "true") |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Production Build
 
-## What technologies are used for this project?
+```bash
+npm run build
+```
 
-This project is built with:
+Output goes to `dist/`. Deploy `dist/` to Vercel (or any static host).
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Project Structure
 
-## How can I deploy this project?
+```
+src/
+├── pages/           # Route pages (lazy-loaded)
+├── components/      # UI components (layout, ui, dashboard, records, etc.)
+├── hooks/           # Custom React hooks
+├── lib/             # Services & utilities (Google Sheets, Drive, audit, etc.)
+├── data/            # Static data & mock data
+├── config/          # Module & navigation configuration
+└── assets/          # Images & logos
+```
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## License
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+© 2026 Ahmed Khaled — Vezloo Group. All rights reserved.
