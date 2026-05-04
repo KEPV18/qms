@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ChevronDown,
   Search, FileText, Folder, FileCode, Table, Loader2,
@@ -8,7 +8,6 @@ import {
 import { UserDropdown } from "./UserDropdown";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate as useRouterNavigate } from "react-router-dom";
 import { searchProjectDrive, DriveSearchResult } from "@/lib/driveService";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
