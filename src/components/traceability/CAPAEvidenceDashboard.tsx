@@ -105,18 +105,15 @@ const getStatusBadge = (status: CAPAStatus): { color: string; label: string } =>
 const calculateEvidenceStatus = (evidence: EvidenceItem[]): { 
   verified: number; 
   pending: number; 
-  rejected: number;
   progress: number;
   canClose: boolean;
 } => {
   const verified = evidence.filter(e => e.status === 'verified').length;
   const pending = evidence.filter(e => e.status === 'pending').length;
-  const rejected = evidence.filter(e => e.status === 'rejected').length;
   const total = evidence.length;
   const progress = total > 0 ? (verified / total) * 100 : 0;
-  // ISO 9001:2015 Clause 10.2: Rejected evidence blocks CAPA closure
-  const canClose = pending === 0 && rejected === 0 && total > 0;
-  return { verified, pending, rejected, progress, canClose };
+  const canClose = pending === 0 && total > 0; // All evidence must be verified
+  return { verified, pending, progress, canClose };
 };
 
 // ============================================================================
@@ -190,7 +187,7 @@ interface CAPACardProps {
 }
 
 const CAPACard: React.FC<CAPACardProps> = ({ capa, onSelect, isSelected }) => {
-  const { verified, pending, rejected, progress, canClose } = calculateEvidenceStatus(capa.evidence);
+  const { verified, pending, progress, canClose } = calculateEvidenceStatus(capa.evidence);
   const statusBadge = getStatusBadge(capa.status);
   
   return (
@@ -400,7 +397,7 @@ const CAPAEvidenceDashboard: React.FC = () => {
   
   const selectedCapaEvidenceStatus = selectedCapa 
     ? calculateEvidenceStatus(selectedCapa.evidence)
-    : { verified: 0, pending: 0, rejected: 0, progress: 0, canClose: false };
+    : { verified: 0, pending: 0, progress: 0, canClose: false };
   
   return (
     <div className="bg-card rounded-lg border border-border">
