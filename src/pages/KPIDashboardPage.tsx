@@ -117,6 +117,12 @@ const RoleKPICard = ({
             <span>Reports to: {role.manager}</span>
           </div>
 
+          {/* Responsible */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Briefcase className="w-4 h-4 shrink-0" />
+            <span>Responsible: HR</span>
+          </div>
+
           {/* Weight validation */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
@@ -202,11 +208,12 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[35%]">Objective</TableHead>
+              <TableHead className="w-[30%]">Objective</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="text-center">Weight</TableHead>
               <TableHead className="text-center">Target</TableHead>
               <TableHead className="text-center">Evaluation</TableHead>
+              <TableHead className="text-center">Responsible</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -235,6 +242,9 @@ const KPIDetailView = ({ role }: { role: RoleKPIData }) => {
                       N/A
                     </span>
                   )}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant="outline" className="text-xs">HR</Badge>
                 </TableCell>
               </TableRow>
             ))}
