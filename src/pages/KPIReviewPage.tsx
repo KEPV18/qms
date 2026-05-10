@@ -1,12 +1,25 @@
 /**
- * KPI Dashboard Page - Phase 2 Enhanced
+ * KPI Review Page - HR ONLY ACCESS
  * 
- * FEATURES:
- * - Actual vs Target tracking with variance visualization
- * - Status alerts (on-track/warning/critical)
- * - Management Review linking
- * - CAPA linking for effectiveness verification
- * - Real-time alerts panel
+ * ⚠️ RESTRICTED ACCESS: This page is intended for HR Department use only.
+ * 
+ * BUSINESS RULE:
+ * - QMS Team: Defines KPIs and monitors trends via public dashboards
+ * - HR Department: SOLE authority for entering actual performance data
+ * - System: Calculates variance/status automatically from HR-provided actuals
+ * 
+ * WHY HIDDEN FROM NAVIGATION:
+ * - Actual KPI values are HR data, not QMS team responsibility
+ * - QMS team should not see or enter employee performance scores
+ * - HR enters data → System calculates → QMS monitors trends
+ * 
+ * ACCESS METHOD:
+ * - Direct URL only: /kpi/review (bookmark for HR)
+ * - No navigation link in TopNav (removed per request)
+ * 
+ * ISO 9001:2015 Alignment:
+ * - Clause 7.2: HR ensures competent personnel enter data
+ * - Clause 9.1.1: System monitors KPIs (actuals from HR source of truth)
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -568,6 +581,28 @@ const KPIReviewPage: React.FC = () => {
           </div>
           
           {/* KPI Grid */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-500 text-white rounded-full p-2">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100">HR Data Source</h4>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                Actual performance values are provided and verified by the <strong>HR Department</strong>. 
+                This system calculates variance and status based on HR-approved data. 
+                For data entry inquiries, contact HR.
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                ISO 9001:2015 Clause 7.2 — HR ensures competent personnel enter performance data
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredKPIs.map(kpi => (
               <KPICard

@@ -32,6 +32,13 @@ const KPIReportsPage = lazy(() => import("./pages/KPIReportsPage"));
 const KPIReviewPage = lazy(() => import("./pages/KPIReviewPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const TraceabilityPage = lazy(() => import("./pages/TraceabilityPage"));
+const InterestedPartiesPage = lazy(() => import("./pages/InterestedPartiesPage"));
+const ContextAnalysisPage = lazy(() => import("./pages/ContextAnalysisPage"));
+const InternalAuditPage = lazy(() => import("./pages/InternalAuditPage"));
+const ProcessInteractionPage = lazy(() => import("./pages/ProcessInteractionPage"));
+const SupplierEvaluationPage = lazy(() => import("./pages/SupplierEvaluationPage"));
+const WorkInstructionsPage = lazy(() => import("./pages/WorkInstructionsPage"));
+const SkillsMatrixPage = lazy(() => import("./pages/SkillsMatrixPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +104,13 @@ const App = () => {
                     <Route path="/kpi/reports" element={<RequireAuth><PageBoundary><KPIReportsPage /></PageBoundary></RequireAuth>} />
                     <Route path="/kpi/review" element={<RequireAuth><PageBoundary><KPIReviewPage /></PageBoundary></RequireAuth>} />
                     <Route path="/traceability/:recordId?" element={<RequireAuth><PageBoundary><TraceabilityPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/interested-parties" element={<RequireAuth><PageBoundary><InterestedPartiesPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/context-analysis" element={<RequireAuth><PageBoundary><ContextAnalysisPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/internal-audit" element={<RequireAuth><PageBoundary><InternalAuditPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/process-interaction" element={<RequireAuth><PageBoundary><ProcessInteractionPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/supplier-evaluation" element={<RequireAuth><PageBoundary><SupplierEvaluationPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/work-instructions" element={<RequireAuth><PageBoundary><WorkInstructionsPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/skills-matrix" element={<RequireAuth><PageBoundary><SkillsMatrixPage /></PageBoundary></RequireAuth>} />
                     <Route path="/archive" element={<RequireAuth><PageBoundary><ArchivePage /></PageBoundary></RequireAuth>} />
                     <Route path="/risk-management" element={<RequireAuth><PageBoundary><RiskManagementPage /></PageBoundary></RequireAuth>} />
                     <Route path="/activity" element={<RequireAuth><PageBoundary><ActivityPage /></PageBoundary></RequireAuth>} />
