@@ -511,7 +511,7 @@ export default function ProcessInteractionPage(): JSX.Element {
                 {/* Interfaces */}
                 <div>
                   <h4 className="font-semibold mb-2 flex items-center">
-                    <ArrowLeftRight className="h-4 w-4 mr-2" /
+                    <ArrowLeftRight className="h-4 w-4 mr-2" />
                     Process Interfaces
                   </h4>                  <div className="flex flex-wrap gap-2">
                     {selectedProcess.interfaces.map((iface, idx) => (
@@ -528,12 +528,12 @@ export default function ProcessInteractionPage(): JSX.Element {
                 {/* KPIs */}
                 <div className="bg-muted p-4 rounded-lg">
                   <h4 className="font-semibold mb-3 flex items-center">
-                    <Target className="h-4 w-4 mr-2" /
+                    <Target className="h-4 w-4 mr-2" />
                     Key Performance Indicators
                   </h4>                  <ul className="space-y-2">
                     {selectedProcess.kpi.map((kpi, idx) => (
                       <li key={idx} className="text-sm flex items-center">
-                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" /
+                        <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
                         {kpi}
                       </li>
                     ))}
@@ -543,7 +543,7 @@ export default function ProcessInteractionPage(): JSX.Element {
                 {/* Procedure Reference */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2 flex items-center">
-                    <FileText className="h-4 w-4 mr-2" /
+                    <FileText className="h-4 w-4 mr-2" />
                     Documented Procedure
                   </h4>                  <p className="text-sm">{selectedProcess.procedure}</p>
                   <p className="text-xs text-muted-foreground mt-1">

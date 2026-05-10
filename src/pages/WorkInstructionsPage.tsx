@@ -363,7 +363,7 @@ export default function WorkInstructionsPage(): JSX.Element {
                       size="sm"
                       onClick={() => setSelectedWI(wi)}
                     >
-                      <Eye className="h-4 w-4 mr-\1" /> />
+                      <Eye className="h-4 w-4 mr-1" />
                       View
                     </Button>
                   </td>
@@ -410,7 +410,7 @@ export default function WorkInstructionsPage(): JSX.Element {
                 {/* Affected Roles */}
                 <div>
                   <h4 className="font-semibold mb-2 flex items-center">
-                    <Users className="h-4 w-4 mr-\1" /> />
+                    <Users className="h-4 w-4 mr-1" />
                     Affected Roles
                   </h4>                  <div className="flex flex-wrap gap-2">
                     {selectedWI.affectedRoles.map((role, idx) => (
@@ -428,7 +428,7 @@ export default function WorkInstructionsPage(): JSX.Element {
                 {STEP_TEMPLATES[selectedWI.id] ? (
                   <div className="bg-muted p-4 rounded-lg">
                     <h4 className="font-semibold mb-3 flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-\1" /> />
+                      <CheckCircle className="h-4 w-4 mr-1" />
                       Procedure Steps ({selectedWI.steps})
                     </h4>                    <ol className="list-decimal list-inside space-y-2">
                       {STEP_TEMPLATES[selectedWI.id].map((step, idx) => (

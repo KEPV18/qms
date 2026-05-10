@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Audit,
+  ShieldCheck,
   Calendar,
   CheckCircle,
   AlertCircle,
@@ -230,7 +230,7 @@ export default function InternalAuditPage(): JSX.Element {
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <div className="bg-blue-500 text-white rounded-full p-2">
-              <Audit className="h-5 w-5" />
+              <ShieldCheck className="h-5 w-5" />
             </div>
             <div>
               <h4 className="font-semibold text-blue-900 dark:text-blue-100">
@@ -320,11 +320,11 @@ export default function InternalAuditPage(): JSX.Element {
                   </p>
                   <div className="flex items-center gap-4 text-sm">
                     <span className="flex items-center">
-                      <Calendar className="h-3 w-3 mr-1" />>
+                      <Calendar className="h-3 w-3 mr-1" />
                       {auditor.totalAudits} audits
                     </span>
                     <span className="flex items-center">
-                      <CheckCircle className="h-3 w-3 mr-1" /
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       Training: {auditor.lastTraining}
                     </span>
                   </div>
@@ -337,12 +337,12 @@ export default function InternalAuditPage(): JSX.Element {
         {/* Audit Criteria */}
         <div className="bg-muted p-4 rounded-lg">
           <h3 className="font-semibold mb-3 flex items-center">
-            <ClipboardCheck className="h-4 w-4 mr-2" /
+            <ClipboardCheck className="h-4 w-4 mr-2" />
             Audit Criteria (ISO 9.2.1)
           </h3>          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {AUDIT_CRITERIA.map((criterion, idx) => (
               <li key={idx} className="text-sm flex items-start">
-                <CheckCircle className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" /
+                <CheckCircle className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
                 {criterion}
               </li>
             ))}
