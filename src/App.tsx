@@ -39,6 +39,7 @@ const ProcessInteractionPage = lazy(() => import("./pages/ProcessInteractionPage
 const SupplierEvaluationPage = lazy(() => import("./pages/SupplierEvaluationPage"));
 const WorkInstructionsPage = lazy(() => import("./pages/WorkInstructionsPage"));
 const SkillsMatrixPage = lazy(() => import("./pages/SkillsMatrixPage"));
+const SWOTAnalysisPage = lazy(() => import("./pages/SWOTAnalysisPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +112,7 @@ const App = () => {
                     <Route path="/supplier-evaluation" element={<RequireAuth><PageBoundary><SupplierEvaluationPage /></PageBoundary></RequireAuth>} />
                     <Route path="/work-instructions" element={<RequireAuth><PageBoundary><WorkInstructionsPage /></PageBoundary></RequireAuth>} />
                     <Route path="/skills-matrix" element={<RequireAuth><PageBoundary><SkillsMatrixPage /></PageBoundary></RequireAuth>} />
+                    <Route path="/swot-analysis" element={<RequireAuth><PageBoundary><SWOTAnalysisPage /></PageBoundary></RequireAuth>} />
                     <Route path="/archive" element={<RequireAuth><PageBoundary><ArchivePage /></PageBoundary></RequireAuth>} />
                     <Route path="/risk-management" element={<RequireAuth><PageBoundary><RiskManagementPage /></PageBoundary></RequireAuth>} />
                     <Route path="/activity" element={<RequireAuth><PageBoundary><ActivityPage /></PageBoundary></RequireAuth>} />
