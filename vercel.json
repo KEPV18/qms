@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node@5"
-    }
-  },
   "rewrites": [
     {
       "source": "/oauth2callback",
