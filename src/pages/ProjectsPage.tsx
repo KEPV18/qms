@@ -125,6 +125,14 @@ const PROJECT_THEMES: Record<string, { icon: any; accent: string; bg: string; bo
     badge: "bg-fuchsia-100 dark:bg-fuchsia-900/30 text-fuchsia-700 dark:text-fuchsia-400",
     gradient: "from-fuchsia-500 to-pink-600"
   },
+  "FAT-009": { 
+    icon: Film, 
+    accent: "text-orange-600 dark:text-orange-400", 
+    bg: "bg-orange-100 dark:bg-orange-900/40",
+    border: "border-orange-400/30 dark:border-orange-600/30",
+    badge: "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+    gradient: "from-orange-500 to-red-600"
+  },
 };
 
 const DEFAULT_THEME = { 

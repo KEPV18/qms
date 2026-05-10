@@ -1,5 +1,5 @@
 // ============================================================================
-// Projects Data — All 8 Vezloo Projects with CRUD Operations
+// Projects Data — All 9 Vezloo Projects with CRUD Operations
 // ============================================================================
 
 import { useState, useCallback, useEffect } from "react";
@@ -284,6 +284,38 @@ const INITIAL_PROJECTS: Project[] = [
     agents: ["VIZ-001", "VIZ-003", "VIZ-013", "VIZ-017", "VIZ-018", "VIZ-019"],
     createdAt: "2026-02-20",
     updatedAt: "2026-03-05"
+  },
+  {
+    id: "FAT-009",
+    code: "PROJ-009",
+    projectCode: "FAT",
+    serialNumber: "009",
+    name: "Fallback Annotation Tool",
+    type: "Video Annotation — Retail AI",
+    client: "External Client (Retail)",
+    status: "active",
+    startDate: "2026-04-20",
+    teamSize: 10,
+    team: [
+      { role: "Annotation Agents", count: 6 },
+      { role: "Team Leader", count: 1 },
+      { role: "QA Specialist", count: 1 },
+      { role: "New Onboarded Agents", count: 4 },
+      { role: "Trainer", count: 1 }
+    ],
+    description: "Video annotation project using a fallback annotation tool for retail AI data labeling. Initially staffed with 6 agents (including trainer Maria Magdy), later expanded with 4 additional onboarded agents. Quality is ensured through structured client training sessions, random sampling, and QC reviews. All annotation is performed on the client platform with no local storage permitted.",
+    composition: "6 Initial Annotation Agents, 4 Onboarded Agents, 1 Team Leader, 1 QA Specialist, Trainer (Maria Magdy), Client Annotation Platform, Approved Guidelines & SOPs",
+    endProduct: "Annotated video datasets for retail AI, QA-validated annotations, Results delivered through client platform",
+    methodOfPrevention: "Initial training before task assignment, 4 client training sessions, Onboarding sessions for new agents, Random sampling and QA checks, Feedback and corrective actions",
+    storageCondition: "Videos stored on client-secured platform, Access limited to authorized project team only, No local storage or downloads",
+    distributionMethod: "Results submitted directly through the client platform, Secure system-based delivery",
+    supportPeriod: "Continuous updates based on client feedback, Ongoing support during project lifecycle",
+    licensing: "NDA signed with the client, All data and outputs are client-owned, Internal use only for project execution",
+    intendedUse: "AI model training for retail annotation, Video recognition improvement",
+    regulatoryRequirements: "Client data protection policies, Internal quality procedures, ISO 9001 requirements (where applicable)",
+    agents: ["VIZ-003", "VIZ-018", "VIZ-001", "VIZ-002", "VIZ-019", "VIZ-020", "VIZ-021", "VIZ-022", "VIZ-023", "VIZ-024"],
+    createdAt: "2026-04-18",
+    updatedAt: "2026-05-09"
   }
 ];
 
